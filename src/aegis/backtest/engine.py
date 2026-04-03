@@ -6,9 +6,8 @@ No look-ahead bias: each step only sees candles up to current index.
 
 import logging
 
-from aegis.agents.momentum.timeseries import MomentumAgent
-from aegis.agents.statistical.zscore import ZScoreAgent
-from aegis.agents.technical.rsi_ema import RsiEmaAgent
+from aegis.agents.base import BaseAgent
+from aegis.agents.factory import create_default_agents
 from aegis.backtest.metrics import (
     calculate_max_drawdown,
     calculate_profit_factor,
@@ -32,17 +31,14 @@ class BacktestEngine:
         confidence_threshold: float = 0.45,
         max_open_positions: int = 5,
         max_risk_pct: float = 0.05,
+        agents: list[BaseAgent] | None = None,
     ):
         self.initial_capital = initial_capital
         self.equity = initial_capital
         self._commission_pct = commission_pct
         self._confidence_threshold = confidence_threshold
 
-        self._agents = [
-            RsiEmaAgent("rsi_ema_bt", {}),
-            ZScoreAgent("zscore_bt", {}),
-            MomentumAgent("momentum_bt", {}),
-        ]
+        self._agents = agents if agents is not None else create_default_agents()
         self._risk_manager = RiskManager(
             max_open_positions=max_open_positions,
             max_risk_pct=max_risk_pct,

@@ -9,11 +9,13 @@ from ta.momentum import RSIIndicator
 from ta.trend import EMAIndicator
 
 from aegis.agents.base import BaseAgent
+from aegis.agents.registry import register_agent
 from aegis.common.types import AgentSignal, MarketDataPoint
 
 MIN_CANDLES = 21  # EMA(21) needs at least 21 data points
 
 
+@register_agent("technical", "rsi_ema")
 class RsiEmaAgent(BaseAgent):
     """Generates signals based on RSI(14) and EMA(9) vs EMA(21) crossover."""
 

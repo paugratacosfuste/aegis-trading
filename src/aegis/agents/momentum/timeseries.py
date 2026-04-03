@@ -4,9 +4,11 @@ Implements mom_03 from 02-AGENT-ARCHITECTURE.md.
 """
 
 from aegis.agents.base import BaseAgent
+from aegis.agents.registry import register_agent
 from aegis.common.types import AgentSignal, MarketDataPoint
 
 
+@register_agent("momentum", "timeseries")
 class MomentumAgent(BaseAgent):
     """Generates signals based on N-day price return (time-series momentum)."""
 

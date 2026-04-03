@@ -1,10 +1,12 @@
 """Shared test fixtures for the Aegis Trading System."""
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
 from aegis.common.types import AgentSignal, MarketDataPoint
+
+_BASE_TIME = datetime(2025, 6, 1, 0, 0, tzinfo=timezone.utc)
 
 
 @pytest.fixture
@@ -15,11 +17,12 @@ def sample_candles_uptrend() -> list[MarketDataPoint]:
     step = 100.0
     for i in range(30):
         price = base_price + i * step
+        ts = _BASE_TIME + timedelta(hours=i)
         candles.append(
             MarketDataPoint(
                 symbol="BTC/USDT",
                 asset_class="crypto",
-                timestamp=datetime(2025, 6, 1, i, 0, tzinfo=timezone.utc),
+                timestamp=ts,
                 timeframe="1h",
                 open=price,
                 high=price + 50,
@@ -40,11 +43,12 @@ def sample_candles_downtrend() -> list[MarketDataPoint]:
     step = -100.0
     for i in range(30):
         price = base_price + i * step
+        ts = _BASE_TIME + timedelta(hours=i)
         candles.append(
             MarketDataPoint(
                 symbol="BTC/USDT",
                 asset_class="crypto",
-                timestamp=datetime(2025, 6, 1, i, 0, tzinfo=timezone.utc),
+                timestamp=ts,
                 timeframe="1h",
                 open=price,
                 high=price + 30,
@@ -62,11 +66,12 @@ def sample_candles_flat() -> list[MarketDataPoint]:
     """30 1h candles at roughly constant price ~42000."""
     candles = []
     for i in range(30):
+        ts = _BASE_TIME + timedelta(hours=i)
         candles.append(
             MarketDataPoint(
                 symbol="BTC/USDT",
                 asset_class="crypto",
-                timestamp=datetime(2025, 6, 1, i, 0, tzinfo=timezone.utc),
+                timestamp=ts,
                 timeframe="1h",
                 open=42000.0,
                 high=42020.0,
@@ -88,11 +93,12 @@ def sample_candles_volatile() -> list[MarketDataPoint]:
     for i in range(30):
         offset = 1500 * math.sin(i * 0.5)
         price = 42000.0 + offset
+        ts = _BASE_TIME + timedelta(hours=i)
         candles.append(
             MarketDataPoint(
                 symbol="BTC/USDT",
                 asset_class="crypto",
-                timestamp=datetime(2025, 6, 1, i, 0, tzinfo=timezone.utc),
+                timestamp=ts,
                 timeframe="1h",
                 open=price - 200,
                 high=price + 500,

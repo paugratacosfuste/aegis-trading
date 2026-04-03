@@ -6,9 +6,11 @@ Implements stat_01 from 02-AGENT-ARCHITECTURE.md.
 import statistics
 
 from aegis.agents.base import BaseAgent
+from aegis.agents.registry import register_agent
 from aegis.common.types import AgentSignal, MarketDataPoint
 
 
+@register_agent("statistical", "zscore")
 class ZScoreAgent(BaseAgent):
     """Generates mean-reversion signals based on z-score of price vs rolling mean."""
 

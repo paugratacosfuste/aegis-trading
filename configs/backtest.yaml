@@ -27,6 +27,58 @@ database:
   min_connections: 2
   max_connections: 5
 
+agents:
+  technical:
+    - {id: tech_01, strategy: indicator, params: {preset: momentum_fast, period_style: fast}}
+    - {id: tech_02, strategy: indicator, params: {preset: momentum_fast, period_style: standard}}
+    - {id: tech_03, strategy: indicator, params: {preset: volume_confirmed, period_style: standard}}
+    - {id: tech_04, strategy: indicator, params: {preset: volume_confirmed, period_style: slow}}
+    - {id: tech_05, strategy: indicator, params: {preset: trend_following, period_style: fast}}
+    - {id: tech_06, strategy: indicator, params: {preset: trend_following, period_style: standard}}
+    - {id: tech_07, strategy: indicator, params: {preset: mean_reversion, period_style: standard}}
+    - {id: tech_08, strategy: indicator, params: {preset: mean_reversion, period_style: slow}}
+    - {id: tech_09, strategy: indicator, params: {preset: full_suite, period_style: mixed}}
+    - {id: tech_10, strategy: indicator, params: {preset: multi_confirmation, period_style: standard}}
+    - {id: tech_11, strategy: asian_range, params: {market: crypto}}
+    - {id: tech_12, strategy: asian_range, params: {market: forex}}
+  statistical:
+    - {id: stat_01, strategy: zscore, params: {lookback: 20}}
+    - {id: stat_02, strategy: zscore, params: {lookback: 50}}
+    - {id: stat_03, strategy: zscore, params: {lookback: 100}}
+    - {id: stat_04, strategy: ornstein_uhlenbeck, params: {lookback: 60}}
+    - {id: stat_05, strategy: kalman, params: {process_noise: 0.01, measurement_noise: 1.0}}
+    - {id: stat_06, strategy: bollinger_zscore, params: {period: 20}}
+    - {id: stat_07, strategy: hurst_zscore, params: {lookback: 100}}
+    - {id: stat_08, strategy: multi_window, params: {windows: [20, 50, 100]}}
+    - {id: stat_09, strategy: sector_relative, params: {}}
+    - {id: stat_10, strategy: pairs, params: {}}
+  momentum:
+    - {id: mom_01, strategy: timeseries, params: {lookback: 5}}
+    - {id: mom_02, strategy: timeseries, params: {lookback: 10}}
+    - {id: mom_03, strategy: timeseries, params: {lookback: 20}}
+    - {id: mom_04, strategy: timeseries, params: {lookback: 60}}
+    - {id: mom_05, strategy: cross_sectional, params: {}}
+    - {id: mom_06, strategy: dual, params: {lookback: 20, benchmark_lookback: 60}}
+    - {id: mom_07, strategy: volume_weighted, params: {lookback: 20}}
+    - {id: mom_08, strategy: rsi_filtered, params: {lookback: 20, rsi_threshold: 70}}
+    - {id: mom_09, strategy: acceleration, params: {short_lookback: 5, long_lookback: 20}}
+    - {id: mom_10, strategy: timeseries, params: {lookback: 120}}
+  sentiment:
+    - {id: sent_01, strategy: news, params: {mode: directional}}
+    - {id: sent_02, strategy: news, params: {mode: contrarian}}
+    - {id: sent_03, strategy: reddit, params: {mode: directional}}
+    - {id: sent_04, strategy: reddit, params: {mode: contrarian}}
+    - {id: sent_05, strategy: fear_greed, params: {market: equity}}
+    - {id: sent_06, strategy: fear_greed, params: {market: crypto}}
+    - {id: sent_07, strategy: combined, params: {}}
+    - {id: sent_08, strategy: velocity, params: {}}
+    - {id: sent_09, strategy: news_volume, params: {}}
+    - {id: sent_10, strategy: divergence, params: {}}
+
+ensemble:
+  regime: normal
+  confidence_threshold: 0.45
+
 risk:
   atr_period: 14
   atr_multipliers:

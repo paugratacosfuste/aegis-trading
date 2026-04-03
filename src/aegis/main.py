@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 def run_backtest(config_path: str) -> None:
     """Run backtest from config."""
+    from aegis.agents.factory import create_agents_from_config, create_default_agents
     from aegis.backtest.data_loader import download_from_binance
     from aegis.backtest.engine import BacktestEngine
     from aegis.backtest.report import print_report, save_report
@@ -48,12 +49,21 @@ def run_backtest(config_path: str) -> None:
     )
     logger.info("Downloaded %d candles", len(candles))
 
+    # Use config-driven agents if defined, else Phase 1 defaults
+    agents = (
+        create_agents_from_config(config.agents)
+        if config.agents
+        else create_default_agents()
+    )
+    logger.info("Created %d agents", len(agents))
+
     engine = BacktestEngine(
         initial_capital=config.initial_capital,
         commission_pct=bt_cfg.get("commission_pct", 0.001),
         confidence_threshold=config.confidence_threshold,
         max_open_positions=config.max_open_positions,
         max_risk_pct=config.max_risk_per_trade,
+        agents=agents,
     )
 
     results = engine.run(candles)
@@ -65,12 +75,21 @@ async def run_live(config_path: str) -> None:
     """Run live/paper trading loop."""
     from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+    from aegis.agents.factory import create_agents_from_config, create_default_agents
     from aegis.common.db import DatabasePool
     from aegis.data.binance_ws import BinanceWebSocketCollector
     from aegis.data.repository import MarketDataRepository
 
     config = load_config(config_path)
     logger.info("Starting Aegis in %s mode", config.mode)
+
+    # Create agents from config or defaults
+    agents = (
+        create_agents_from_config(config.agents)
+        if config.agents
+        else create_default_agents()
+    )
+    logger.info("Created %d agents for live trading", len(agents))
 
     # Database
     db = DatabasePool.from_config(config.database)

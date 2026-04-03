@@ -59,6 +59,8 @@ class Settings:
     staleness: dict[str, Any] = field(default_factory=dict)
     risk: dict[str, Any] = field(default_factory=dict)
     backtest: dict[str, Any] = field(default_factory=dict)
+    agents: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
+    ensemble: dict[str, Any] = field(default_factory=dict)
 
 
 def load_config(path: str) -> Settings:
@@ -101,4 +103,6 @@ def load_config(path: str) -> Settings:
         staleness=data.get("staleness", {}),
         risk=data.get("risk", {}),
         backtest=data.get("backtest", {}),
+        agents=data.get("agents", {}),
+        ensemble=data.get("ensemble", {}),
     )
