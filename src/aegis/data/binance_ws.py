@@ -12,8 +12,9 @@ from aegis.data.repository import MarketDataRepository
 
 logger = logging.getLogger(__name__)
 
-BINANCE_WS_URL = "wss://stream.binance.com:9443/ws"
-BINANCE_TESTNET_WS_URL = "wss://testnet.binance.vision/ws"
+# Market data streams always use production (read-only, no auth required).
+# Binance testnet does not serve WebSocket market data streams.
+BINANCE_WS_URL = "wss://stream.binance.com:9443"
 
 DEFAULT_SYMBOLS = ["btcusdt", "ethusdt", "solusdt", "bnbusdt", "xrpusdt"]
 
@@ -62,21 +63,20 @@ class BinanceWebSocketCollector:
         self,
         repository: MarketDataRepository,
         symbols: list[str] | None = None,
-        testnet: bool = True,
         interval: str = "1m",
     ):
         self._repo = repository
         self._symbols = symbols or DEFAULT_SYMBOLS
-        self._testnet = testnet
         self._interval = interval
         self._running = False
         self._reconnect_delay = 1.0
         self._max_reconnect_delay = 60.0
 
     def _build_url(self) -> str:
-        base = BINANCE_TESTNET_WS_URL if self._testnet else BINANCE_WS_URL
         streams = "/".join(f"{s}@kline_{self._interval}" for s in self._symbols)
-        return f"{base}/{streams}"
+        if len(self._symbols) == 1:
+            return f"{BINANCE_WS_URL}/ws/{streams}"
+        return f"{BINANCE_WS_URL}/stream?streams={streams}"
 
     async def start(self) -> None:
         """Start collecting data. Reconnects on failure with exponential backoff."""

@@ -9,8 +9,14 @@ import argparse
 import asyncio
 import logging
 import sys
+from pathlib import Path
+
+from dotenv import load_dotenv
 
 from aegis.common.config import load_config
+
+# Load .env before anything reads env vars
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -59,31 +65,50 @@ async def run_live(config_path: str) -> None:
     """Run live/paper trading loop."""
     from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+    from aegis.common.db import DatabasePool
+    from aegis.data.binance_ws import BinanceWebSocketCollector
+    from aegis.data.repository import MarketDataRepository
+
     config = load_config(config_path)
     logger.info("Starting Aegis in %s mode", config.mode)
 
+    # Database
+    db = DatabasePool.from_config(config.database)
+    repo = MarketDataRepository(db)
+    logger.info("Database pool created")
+
+    # Binance WebSocket collector (uses production WS for market data - read-only, no auth)
+    crypto_symbols = [s.replace("/", "").lower() for s in config.symbols.get("crypto", [])]
+    collector = BinanceWebSocketCollector(
+        repository=repo,
+        symbols=crypto_symbols,
+        interval="1m",
+    )
+
+    # Scheduler for periodic jobs
     scheduler = AsyncIOScheduler()
 
-    # Signal pipeline job
     async def signal_pipeline_job():
         logger.info("Signal pipeline tick")
-        # Full pipeline: fetch candles -> agents -> ensemble -> risk -> execute
 
-    # Exit monitor job
     async def check_exits_job():
         logger.debug("Checking exits")
 
     scheduler.add_job(signal_pipeline_job, "interval", seconds=300, id="signal_pipeline")
     scheduler.add_job(check_exits_job, "interval", seconds=60, id="check_exits")
-
     scheduler.start()
-    logger.info("Scheduler started. Press Ctrl+C to stop.")
+    logger.info("Scheduler started")
 
+    # Run WS collector as the main async task
+    logger.info("Starting Binance WS collector for %s", crypto_symbols)
     try:
-        while True:
-            await asyncio.sleep(1)
+        await collector.start()
     except (KeyboardInterrupt, SystemExit):
+        pass
+    finally:
+        collector.stop()
         scheduler.shutdown()
+        db.close()
         logger.info("Aegis shut down.")
 
 
