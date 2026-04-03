@@ -19,11 +19,11 @@ symbols:
     - BTC/USDT
 
 database:
-  host: localhost
+  host: ${DB_HOST}
   port: 5432
-  dbname: aegis
-  user: aegis
-  password: aegis
+  dbname: ${DB_NAME}
+  user: ${DB_USER}
+  password: ${DB_PASSWORD}
   min_connections: 2
   max_connections: 5
 
@@ -74,6 +74,44 @@ agents:
     - {id: sent_08, strategy: velocity, params: {}}
     - {id: sent_09, strategy: news_volume, params: {}}
     - {id: sent_10, strategy: divergence, params: {}}
+  macro:
+    - {id: macro_01, strategy: yield_curve_fed, params: {}}
+    - {id: macro_02, strategy: risk_regime, params: {}}
+    - {id: macro_03, strategy: economic_cycle, params: {}}
+    - {id: macro_04, strategy: inflation_regime, params: {}}
+    - {id: macro_05, strategy: hmm_regime, params: {}}
+  geopolitical:
+    - {id: geo_01, strategy: conflict_sanctions, params: {}}
+    - {id: geo_02, strategy: trade_policy, params: {}}
+  world_leader:
+    - {id: leader_01, strategy: statement, params: {}}
+  fundamental:
+    - {id: fund_01, strategy: sector, params: {sector: technology}}
+    - {id: fund_02, strategy: sector, params: {sector: healthcare}}
+    - {id: fund_03, strategy: sector, params: {sector: financials}}
+    - {id: fund_04, strategy: sector, params: {sector: consumer_discretionary}}
+    - {id: fund_05, strategy: sector, params: {sector: consumer_staples}}
+    - {id: fund_06, strategy: sector, params: {sector: energy}}
+    - {id: fund_07, strategy: sector, params: {sector: industrials}}
+    - {id: fund_08, strategy: sector, params: {sector: materials}}
+    - {id: fund_09, strategy: sector, params: {sector: utilities}}
+    - {id: fund_10, strategy: sector, params: {sector: real_estate}}
+    - {id: fund_11, strategy: sector, params: {sector: communication_services}}
+    - {id: fund_12, strategy: market_cap, params: {tier: large}}
+    - {id: fund_13, strategy: market_cap, params: {tier: mid}}
+    - {id: fund_14, strategy: market_cap, params: {tier: small}}
+    - {id: fund_15, strategy: earnings_surprise, params: {}}
+  crypto:
+    - {id: crypto_01, strategy: crypto_technical, params: {preset: trend_following, period_style: fast}}
+    - {id: crypto_02, strategy: crypto_technical, params: {preset: momentum_fast, period_style: fast}}
+    - {id: crypto_03, strategy: crypto_technical, params: {preset: mean_reversion, period_style: standard}}
+    - {id: crypto_04, strategy: crypto_technical, params: {preset: volume_confirmed, period_style: standard}}
+    - {id: crypto_05, strategy: crypto_technical, params: {preset: full_suite, period_style: mixed}}
+    - {id: crypto_06, strategy: funding_reversal, params: {}}
+    - {id: crypto_07, strategy: dominance, params: {}}
+    - {id: crypto_08, strategy: fear_greed_crypto, params: {}}
+    - {id: crypto_09, strategy: liquidations, params: {}}
+    - {id: crypto_10, strategy: defi_tvl, params: {}}
 
 ensemble:
   regime: normal

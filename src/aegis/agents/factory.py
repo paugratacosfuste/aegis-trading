@@ -41,6 +41,27 @@ def _ensure_registered() -> None:
     import aegis.agents.sentiment.reddit  # noqa: F401
     import aegis.agents.sentiment.fear_greed  # noqa: F401
     import aegis.agents.sentiment.combined  # noqa: F401
+    # Phase 3 macro agents
+    import aegis.agents.macro.yield_curve  # noqa: F401
+    import aegis.agents.macro.risk_regime  # noqa: F401
+    import aegis.agents.macro.economic_cycle  # noqa: F401
+    import aegis.agents.macro.inflation  # noqa: F401
+    import aegis.agents.macro.hmm_regime  # noqa: F401
+    # Phase 3 geopolitical agents
+    import aegis.agents.geopolitical.conflict  # noqa: F401
+    import aegis.agents.geopolitical.trade_policy  # noqa: F401
+    # Phase 3 world leader agent
+    import aegis.agents.world_leader.statement_agent  # noqa: F401
+    # Phase 3 fundamental agents
+    import aegis.agents.fundamental.sector  # noqa: F401
+    import aegis.agents.fundamental.market_cap  # noqa: F401
+    import aegis.agents.fundamental.earnings  # noqa: F401
+    # Phase 3 crypto agents
+    import aegis.agents.crypto.funding  # noqa: F401
+    import aegis.agents.crypto.dominance  # noqa: F401
+    import aegis.agents.crypto.crypto_sentiment  # noqa: F401
+    import aegis.agents.crypto.defi  # noqa: F401
+    import aegis.agents.crypto.crypto_technical  # noqa: F401
     restore_registry()
 
 

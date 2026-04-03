@@ -47,6 +47,38 @@ class TestWeights:
             assert result[k] == pytest.approx(BASE_TYPE_WEIGHTS[k], abs=0.001)
 
     def test_all_regimes_exist(self):
-        expected = {"strong_trend_up", "strong_trend_down", "mean_reverting",
-                    "high_volatility", "low_volatility", "crisis"}
+        expected = {
+            # Phase 2 regimes
+            "strong_trend_up", "strong_trend_down", "mean_reverting",
+            "high_volatility", "low_volatility", "crisis",
+            # Phase 3 macro regimes
+            "risk_on", "risk_off", "recession_risk",
+            "early_cycle", "mid_cycle", "late_cycle",
+            "expansion", "contraction",
+            "deflationary", "low", "moderate", "high", "very_high",
+            "bull", "bear", "transition", "recovery",
+        }
         assert set(REGIME_WEIGHT_ADJUSTMENTS.keys()) == expected
+
+    def test_zero_weights_normal_regime(self):
+        result = apply_regime_weights({"a": 0.0, "b": 0.0}, "normal")
+        assert result == {"a": 0.0, "b": 0.0}
+
+    def test_zero_weights_regime(self):
+        result = apply_regime_weights({"a": 0.0, "b": 0.0}, "crisis")
+        assert result == {"a": 0.0, "b": 0.0}
+
+    def test_risk_on_boosts_momentum(self):
+        normal = apply_regime_weights(BASE_TYPE_WEIGHTS, "normal")
+        risk_on = apply_regime_weights(BASE_TYPE_WEIGHTS, "risk_on")
+        assert risk_on["momentum"] > normal["momentum"]
+
+    def test_risk_off_boosts_geopolitical(self):
+        normal = apply_regime_weights(BASE_TYPE_WEIGHTS, "normal")
+        risk_off = apply_regime_weights(BASE_TYPE_WEIGHTS, "risk_off")
+        assert risk_off["geopolitical"] > normal["geopolitical"]
+
+    def test_recession_risk_reduces_momentum(self):
+        normal = apply_regime_weights(BASE_TYPE_WEIGHTS, "normal")
+        recession = apply_regime_weights(BASE_TYPE_WEIGHTS, "recession_risk")
+        assert recession["momentum"] < normal["momentum"]

@@ -4,7 +4,14 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from aegis.common.types import AgentSignal, MarketDataPoint
+from aegis.common.types import (
+    AgentSignal,
+    CryptoMetrics,
+    FundamentalScore,
+    GeopoliticalEvent,
+    MacroDataPoint,
+    MarketDataPoint,
+)
 
 _BASE_TIME = datetime(2025, 6, 1, 0, 0, tzinfo=timezone.utc)
 
@@ -129,4 +136,64 @@ def sample_agent_signal() -> AgentSignal:
         reasoning={"rsi": 28},
         features_used={"rsi_14": 28.0},
         metadata={},
+    )
+
+
+@pytest.fixture
+def sample_macro_data() -> MacroDataPoint:
+    return MacroDataPoint(
+        timestamp=datetime(2025, 6, 1, 12, 0, tzinfo=timezone.utc),
+        yield_10y=4.25, yield_2y=4.05, yield_spread=0.20,
+        vix=18.5, vix_regime="normal", dxy=104.5,
+        fed_rate=5.25, cpi_latest=3.2,
+    )
+
+
+@pytest.fixture
+def sample_geo_event() -> GeopoliticalEvent:
+    return GeopoliticalEvent(
+        event_id="geo_test_01",
+        timestamp=datetime(2025, 6, 1, 12, 0, tzinfo=timezone.utc),
+        source="gdelt", category="conflict", severity=0.6,
+        affected_sectors=("energy", "defense"),
+        affected_regions=("middle_east",),
+        raw_text="Test geopolitical event",
+        sentiment_score=-0.4, half_life_hours=24,
+    )
+
+
+@pytest.fixture
+def sample_fundamental_score() -> FundamentalScore:
+    return FundamentalScore(
+        symbol="AAPL",
+        timestamp=datetime(2025, 6, 1, tzinfo=timezone.utc),
+        sector="tech", market_cap_tier="large",
+        quality_score=0.82, value_score=0.65, growth_score=0.90,
+        pe_zscore=-0.3, revenue_growth=0.12, source="yahoo",
+    )
+
+
+@pytest.fixture
+def sample_crypto_metrics() -> CryptoMetrics:
+    return CryptoMetrics(
+        symbol="BTC/USDT",
+        timestamp=datetime(2025, 6, 1, 12, 0, tzinfo=timezone.utc),
+        funding_rate=0.005, open_interest=5e9, btc_dominance=55.0,
+        fear_greed_index=65, tvl=50e9, tvl_change_24h=1.5,
+        liquidations_24h=80e6, source="binance",
+    )
+
+
+@pytest.fixture
+def sample_veto_signal() -> AgentSignal:
+    """A signal with VETO metadata set."""
+    return AgentSignal(
+        agent_id="geo_01", agent_type="geopolitical", symbol="BTC/USDT",
+        timestamp=datetime(2025, 6, 1, 12, 0, tzinfo=timezone.utc),
+        direction=-0.5, confidence=0.9, timeframe="1h",
+        expected_holding_period="hours", entry_price=None,
+        stop_loss=None, take_profit=None,
+        reasoning={"risk_score": 0.85},
+        features_used={},
+        metadata={"veto": True, "risk_score": 0.85},
     )

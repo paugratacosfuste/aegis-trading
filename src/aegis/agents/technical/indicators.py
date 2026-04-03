@@ -21,17 +21,24 @@ def _safe_last(series: pd.Series) -> float:
     return 0.0 if pd.isna(val) else float(val)
 
 
-def compute_rsi_signal(closes: pd.Series, period: int = 14) -> float:
+def compute_rsi_signal(
+    closes: pd.Series,
+    period: int = 14,
+    oversold: float = 30,
+    overbought: float = 70,
+) -> float:
     if len(closes) < period + 1:
         return 0.0
     rsi = _safe_last(RSIIndicator(close=closes, window=period).rsi())
     if rsi == 0.0:
         return 0.0
-    if rsi < 30:
+    if rsi < oversold:
         return 1.0
-    if rsi > 70:
+    if rsi > overbought:
         return -1.0
-    return (50 - rsi) / 20.0
+    mid = (oversold + overbought) / 2.0
+    half_range = (overbought - oversold) / 2.0
+    return (mid - rsi) / half_range if half_range > 0 else 0.0
 
 
 def compute_macd_signal(closes: pd.Series) -> float:

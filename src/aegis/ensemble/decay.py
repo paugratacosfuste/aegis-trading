@@ -8,10 +8,15 @@ from datetime import datetime, timezone
 from aegis.common.types import AgentSignal
 
 SIGNAL_HALF_LIVES: dict[str, float] = {
-    "technical": 4.0,      # hours
-    "statistical": 48.0,   # hours
-    "momentum": 120.0,     # hours
-    "sentiment": 6.0,      # hours
+    "technical": 4.0,       # hours
+    "statistical": 48.0,    # hours
+    "momentum": 120.0,      # hours
+    "sentiment": 6.0,       # hours
+    "macro": 168.0,         # hours (1 week - regime shifts are slow)
+    "geopolitical": 24.0,   # hours (events decay within a day)
+    "world_leader": 12.0,   # hours (statements lose impact fast)
+    "fundamental": 720.0,   # hours (30 days - fundamentals are sticky)
+    "crypto": 4.0,          # hours (crypto moves fast)
 }
 
 _DEFAULT_HALF_LIFE = 24.0  # hours
@@ -23,7 +28,10 @@ def apply_decay(signal: AgentSignal, current_time: datetime) -> AgentSignal:
     if hours_since <= 0:
         return signal
 
-    half_life = SIGNAL_HALF_LIVES.get(signal.agent_type, _DEFAULT_HALF_LIFE)
+    # Per-signal half-life override (e.g., world_leader statement types)
+    half_life = signal.metadata.get("half_life_hours") if signal.metadata else None
+    if half_life is None:
+        half_life = SIGNAL_HALF_LIVES.get(signal.agent_type, _DEFAULT_HALF_LIFE)
     decay_factor = 0.5 ** (hours_since / half_life)
 
     return AgentSignal(

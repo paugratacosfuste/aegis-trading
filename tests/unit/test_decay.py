@@ -75,3 +75,23 @@ class TestDecay:
         past = signal.timestamp - timedelta(hours=1)
         result = apply_decay(signal, past)
         assert result.confidence == signal.confidence
+
+    def test_metadata_half_life_override(self):
+        """Signals with metadata half_life_hours override type-level half-life."""
+        ts = datetime(2025, 6, 1, 12, 0, tzinfo=timezone.utc)
+        signal = AgentSignal(
+            agent_id="leader_01", agent_type="world_leader", symbol="SPY",
+            timestamp=ts, direction=0.5, confidence=1.0, timeframe="1h",
+            expected_holding_period="hours", entry_price=None,
+            stop_loss=None, take_profit=None, reasoning={},
+            features_used={}, metadata={"half_life_hours": 4},
+        )
+        # At 4 hours (the metadata override), should be ~0.5
+        future = ts + timedelta(hours=4)
+        result = apply_decay(signal, future)
+        assert result.confidence == pytest.approx(0.5, abs=0.01)
+
+        # Without override, world_leader type has 12h half-life
+        signal_no_override = _make_signal(agent_type="world_leader")
+        result2 = apply_decay(signal_no_override, signal_no_override.timestamp + timedelta(hours=4))
+        assert result2.confidence > 0.6  # Much less decay at 4h with 12h half-life

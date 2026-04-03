@@ -63,6 +63,34 @@ class GeopoliticalEvent:
     half_life_hours: int
 
 
+@dataclass(frozen=True)
+class FundamentalScore:
+    symbol: str
+    timestamp: datetime
+    sector: str
+    market_cap_tier: str  # "large" | "mid" | "small"
+    quality_score: float  # [0, 1] composite
+    value_score: float  # [0, 1]
+    growth_score: float  # [0, 1]
+    pe_zscore: float  # vs sector median
+    revenue_growth: float
+    source: str
+
+
+@dataclass(frozen=True)
+class CryptoMetrics:
+    symbol: str
+    timestamp: datetime
+    funding_rate: float
+    open_interest: float
+    btc_dominance: float
+    fear_greed_index: int  # 0-100
+    tvl: float  # Total Value Locked (USD)
+    tvl_change_24h: float  # percentage
+    liquidations_24h: float  # USD
+    source: str
+
+
 class AgentSignal:
     """Signal output from an agent. Direction and confidence are clamped to valid ranges."""
 
