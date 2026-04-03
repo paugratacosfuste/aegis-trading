@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aegis-trading"
+version = "0.1.0"
+description = "Risk-first multi-agent ensemble quantitative trading system"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.2,<3",
+    "numpy>=1.26,<3",
+    "ta>=0.11.0",
+    "psycopg2-binary>=2.9,<3",
+    "python-binance>=1.0.19,<2",
+    "apscheduler>=3.10,<4",
+    "pyyaml>=6.0,<7",
+    "yfinance>=0.2.36,<1",
+    "httpx>=0.27,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<9",
+    "pytest-cov>=5.0,<6",
+    "pytest-asyncio>=0.23,<1",
+    "pytest-mock>=3.14,<4",
+    "ruff>=0.4,<1",
+    "mypy>=1.9,<2",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "integration: integration tests (require DB)",
+    "backtest: backtest tests (require historical data)",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.coverage.run]
+source = ["src/aegis"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true

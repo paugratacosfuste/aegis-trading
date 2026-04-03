@@ -1,0 +1,25 @@
+# Secrets
+.env
+
+# Architecture docs (keep private, not needed for code to run)
+*.md
+!README.md
+
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.venv/
+
+# macOS
+.DS_Store
+
+# Backtest outputs
+backtest_results.json
+
+# IDE
+.vscode/
+.idea/
