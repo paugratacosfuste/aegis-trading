@@ -21,8 +21,8 @@ logger = logging.getLogger(__name__)
 
 DIRECTION_THRESHOLD = 0.1  # Minimum |direction| to generate a trade
 
-# Agent types that don't participate in voting directly
-_NON_VOTING_TYPES = {"macro", "fundamental"}
+# Agent types that don't participate in voting directly (used by engine too)
+NON_VOTING_TYPES = frozenset({"macro", "fundamental"})
 
 # Crypto symbols contain these bases
 _CRYPTO_BASES = ("BTC", "ETH", "SOL", "BNB", "XRP", "ADA", "DOGE", "AVAX", "DOT", "MATIC")
@@ -132,7 +132,7 @@ def vote(
                 best_macro_conf = macro_conf
 
     # Filter to voting signals only (exclude macro, fundamental)
-    voting_signals = [s for s in signals if s.agent_type not in _NON_VOTING_TYPES]
+    voting_signals = [s for s in signals if s.agent_type not in NON_VOTING_TYPES]
     if not voting_signals:
         return _no_trade("No voting signals", symbol)
 

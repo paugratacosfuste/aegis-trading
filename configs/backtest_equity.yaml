@@ -1,0 +1,110 @@
+mode: backtest
+confidence_threshold: 0.45
+max_risk_per_trade: 0.05
+max_open_positions: 5
+kelly_fraction: 0.5
+daily_drawdown_halt: -0.15
+weekly_drawdown_halt: -0.25
+initial_capital: 5000.0
+
+backtest:
+  symbols:
+    - AAPL
+    - MSFT
+    - GOOGL
+    - AMZN
+    - NVDA
+    - JPM
+    - JNJ
+    - XOM
+    - PG
+    - MA
+  timeframe: 1d
+  start_date: "2025-04-01"
+  end_date: "2026-04-01"
+  commission_pct: 0.001
+
+symbols:
+  equity:
+    - AAPL
+    - MSFT
+    - GOOGL
+    - AMZN
+    - NVDA
+    - JPM
+    - JNJ
+    - XOM
+    - PG
+    - MA
+
+database:
+  host: ${DB_HOST}
+  port: 5432
+  dbname: ${DB_NAME}
+  user: ${DB_USER}
+  password: ${DB_PASSWORD}
+  min_connections: 2
+  max_connections: 5
+
+agents:
+  technical:
+    - {id: tech_01, strategy: indicator, params: {preset: momentum_fast, period_style: fast}}
+    - {id: tech_02, strategy: indicator, params: {preset: momentum_fast, period_style: standard}}
+    - {id: tech_03, strategy: indicator, params: {preset: volume_confirmed, period_style: standard}}
+    - {id: tech_04, strategy: indicator, params: {preset: volume_confirmed, period_style: slow}}
+    - {id: tech_05, strategy: indicator, params: {preset: trend_following, period_style: fast}}
+    - {id: tech_06, strategy: indicator, params: {preset: trend_following, period_style: standard}}
+    - {id: tech_07, strategy: indicator, params: {preset: mean_reversion, period_style: standard}}
+    - {id: tech_08, strategy: indicator, params: {preset: mean_reversion, period_style: slow}}
+    - {id: tech_09, strategy: indicator, params: {preset: full_suite, period_style: mixed}}
+    - {id: tech_10, strategy: indicator, params: {preset: multi_confirmation, period_style: standard}}
+  statistical:
+    - {id: stat_01, strategy: zscore, params: {lookback: 20}}
+    - {id: stat_02, strategy: zscore, params: {lookback: 50}}
+    - {id: stat_03, strategy: zscore, params: {lookback: 100}}
+    - {id: stat_04, strategy: ornstein_uhlenbeck, params: {lookback: 60}}
+    - {id: stat_05, strategy: kalman, params: {process_noise: 0.01, measurement_noise: 1.0}}
+    - {id: stat_06, strategy: bollinger_zscore, params: {period: 20}}
+    - {id: stat_07, strategy: hurst_zscore, params: {lookback: 100}}
+    - {id: stat_08, strategy: multi_window, params: {windows: [20, 50, 100]}}
+  momentum:
+    - {id: mom_01, strategy: timeseries, params: {lookback: 5}}
+    - {id: mom_02, strategy: timeseries, params: {lookback: 10}}
+    - {id: mom_03, strategy: timeseries, params: {lookback: 20}}
+    - {id: mom_04, strategy: timeseries, params: {lookback: 60}}
+    - {id: mom_06, strategy: dual, params: {lookback: 20, benchmark_lookback: 60}}
+    - {id: mom_07, strategy: volume_weighted, params: {lookback: 20}}
+    - {id: mom_08, strategy: rsi_filtered, params: {lookback: 20, rsi_threshold: 70}}
+    - {id: mom_09, strategy: acceleration, params: {short_lookback: 5, long_lookback: 20}}
+  fundamental:
+    - {id: fund_01, strategy: sector, params: {sector: technology}}
+    - {id: fund_02, strategy: sector, params: {sector: healthcare}}
+    - {id: fund_03, strategy: sector, params: {sector: financials}}
+    - {id: fund_04, strategy: sector, params: {sector: consumer_discretionary}}
+    - {id: fund_05, strategy: sector, params: {sector: consumer_staples}}
+    - {id: fund_06, strategy: sector, params: {sector: energy}}
+    - {id: fund_07, strategy: sector, params: {sector: industrials}}
+    - {id: fund_08, strategy: sector, params: {sector: materials}}
+    - {id: fund_09, strategy: sector, params: {sector: utilities}}
+    - {id: fund_10, strategy: sector, params: {sector: real_estate}}
+    - {id: fund_11, strategy: sector, params: {sector: communication_services}}
+    - {id: fund_12, strategy: market_cap, params: {tier: large}}
+    - {id: fund_13, strategy: market_cap, params: {tier: mid}}
+    - {id: fund_14, strategy: market_cap, params: {tier: small}}
+    - {id: fund_15, strategy: earnings_surprise, params: {}}
+
+ensemble:
+  regime: normal
+  confidence_threshold: 0.45
+  enabled_types: [technical, statistical, momentum, fundamental]
+
+risk:
+  atr_period: 14
+  atr_multipliers:
+    low: 1.5
+    normal: 2.0
+    high: 2.5
+    extreme: 3.0
+  default_win_rate: 0.45
+  default_avg_win: 0.02
+  default_avg_loss: 0.015

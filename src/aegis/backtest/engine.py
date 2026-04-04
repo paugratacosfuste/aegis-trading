@@ -16,7 +16,7 @@ from aegis.backtest.metrics import (
 )
 from aegis.backtest.regime_detector import PriceRegimeDetector
 from aegis.common.types import MarketDataPoint, Position
-from aegis.ensemble.voter import vote
+from aegis.ensemble.voter import NON_VOTING_TYPES, vote
 from aegis.risk.risk_manager import RiskManager
 from aegis.risk.stop_loss import update_trailing_stop
 
@@ -146,7 +146,7 @@ class BacktestEngine:
             signals = []
             for agent in self._agents:
                 sig = agent.generate_signal(symbol, window)
-                if abs(sig.direction) > 0.01:
+                if abs(sig.direction) > 0.01 or sig.agent_type in NON_VOTING_TYPES:
                     signals.append(sig)
 
             if not signals:
@@ -339,9 +339,10 @@ class BacktestEngine:
                     continue
 
                 signals = []
+                _NON_VOTING = {"fundamental", "macro"}
                 for agent in self._agents:
                     sig = agent.generate_signal(symbol, window)
-                    if abs(sig.direction) > 0.01:
+                    if abs(sig.direction) > 0.01 or sig.agent_type in _NON_VOTING:
                         signals.append(sig)
 
                 if not signals:

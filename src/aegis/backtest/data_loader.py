@@ -1,11 +1,25 @@
-"""Backtest data loader: loads historical candles from DB or Binance API."""
+"""Backtest data loader: loads historical candles from DB, Binance, or yfinance."""
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
+
+import yfinance as yf
 
 from aegis.common.types import MarketDataPoint
 
 logger = logging.getLogger(__name__)
+
+# Crypto base symbols for symbol routing
+_CRYPTO_BASES = {"BTC", "ETH", "SOL", "BNB", "XRP", "ADA", "DOGE", "AVAX", "DOT", "MATIC"}
+
+
+def is_crypto_symbol(symbol: str) -> bool:
+    """Detect if a symbol is crypto (contains USDT or known crypto base)."""
+    upper = symbol.upper()
+    if "USDT" in upper:
+        return True
+    base = upper.split("/")[0]
+    return base in _CRYPTO_BASES
 
 
 def load_from_db(db, symbol: str, timeframe: str, start: datetime, end: datetime) -> list[MarketDataPoint]:
@@ -56,7 +70,7 @@ def download_from_binance(
     aegis_symbol = _to_aegis_symbol(symbol)
     candles = []
     for k in klines:
-        ts = datetime.utcfromtimestamp(k[0] / 1000)
+        ts = datetime.fromtimestamp(k[0] / 1000, tz=timezone.utc)
         candles.append(
             MarketDataPoint(
                 symbol=aegis_symbol,
@@ -72,6 +86,47 @@ def download_from_binance(
             )
         )
     logger.info("Downloaded %d candles for %s", len(candles), aegis_symbol)
+    return candles
+
+
+def download_from_yfinance(
+    symbol: str = "AAPL",
+    start: str = "2025-04-01",
+    end: str = "2026-04-01",
+    interval: str = "1d",
+) -> list[MarketDataPoint]:
+    """Download historical OHLCV from yfinance for equity symbols.
+
+    Returns list of MarketDataPoint with asset_class='equity'.
+    """
+    ticker = yf.Ticker(symbol)
+    df = ticker.history(start=start, end=end, interval=interval)
+
+    if df.empty:
+        logger.warning("No data from yfinance for %s", symbol)
+        return []
+
+    candles = []
+    for idx, row in df.iterrows():
+        ts = idx.to_pydatetime()
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+
+        candles.append(
+            MarketDataPoint(
+                symbol=symbol,
+                asset_class="equity",
+                timestamp=ts,
+                timeframe=interval,
+                open=float(row["Open"]),
+                high=float(row["High"]),
+                low=float(row["Low"]),
+                close=float(row["Close"]),
+                volume=float(row["Volume"]),
+                source="yfinance",
+            )
+        )
+    logger.info("Downloaded %d candles for %s from yfinance", len(candles), symbol)
     return candles
 
 

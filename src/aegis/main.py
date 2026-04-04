@@ -28,7 +28,11 @@ logger = logging.getLogger(__name__)
 def run_backtest(config_path: str) -> None:
     """Run backtest from config."""
     from aegis.agents.factory import create_agents_from_config, create_default_agents
-    from aegis.backtest.data_loader import download_from_binance
+    from aegis.backtest.data_loader import (
+        download_from_binance,
+        download_from_yfinance,
+        is_crypto_symbol,
+    )
     from aegis.backtest.engine import BacktestEngine
     from aegis.backtest.report import print_report, save_report
 
@@ -40,20 +44,28 @@ def run_backtest(config_path: str) -> None:
     if isinstance(symbols, str):
         symbols = [symbols]
 
-    start = bt_cfg.get("start_date", "1 Apr, 2025")
-    end = bt_cfg.get("end_date", "1 Apr, 2026")
+    start = bt_cfg.get("start_date", "2025-04-01")
+    end = bt_cfg.get("end_date", "2026-04-01")
     interval = bt_cfg.get("timeframe", "1h")
 
     candles_by_symbol: dict[str, list] = {}
     for sym in symbols:
-        binance_sym = sym.replace("/", "")
         logger.info("Downloading historical data for %s...", sym)
-        candles = download_from_binance(
-            symbol=binance_sym,
-            interval=interval,
-            start_str=start,
-            end_str=end,
-        )
+        if is_crypto_symbol(sym):
+            binance_sym = sym.replace("/", "")
+            candles = download_from_binance(
+                symbol=binance_sym,
+                interval=interval,
+                start_str=start,
+                end_str=end,
+            )
+        else:
+            candles = download_from_yfinance(
+                symbol=sym,
+                start=start,
+                end=end,
+                interval=interval,
+            )
         logger.info("Downloaded %d candles for %s", len(candles), sym)
         candles_by_symbol[sym] = candles
 

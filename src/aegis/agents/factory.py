@@ -76,8 +76,13 @@ def create_agents_from_config(
          "statistical": [...], ...}
 
     If enabled_types is provided, only agent types in the list are created.
+    Fundamental agents automatically receive YahooFundamentalProvider.
     """
     _ensure_registered()
+
+    # Lazy-create shared provider for fundamental agents
+    fund_provider = None
+
     agents: list[BaseAgent] = []
     for agent_type, agent_defs in agents_config.items():
         if enabled_types is not None and agent_type not in enabled_types:
@@ -87,7 +92,16 @@ def create_agents_from_config(
             strategy = agent_def["strategy"]
             params = agent_def.get("params", {})
             cls = get_agent_class(agent_type, strategy)
-            agents.append(cls(agent_id, params))
+
+            if agent_type == "fundamental":
+                if fund_provider is None:
+                    from aegis.agents.fundamental.providers import (
+                        YahooFundamentalProvider,
+                    )
+                    fund_provider = YahooFundamentalProvider()
+                agents.append(cls(agent_id, params, provider=fund_provider))
+            else:
+                agents.append(cls(agent_id, params))
     return agents
 
 
