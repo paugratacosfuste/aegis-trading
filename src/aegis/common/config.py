@@ -63,6 +63,7 @@ class Settings:
     ensemble: dict[str, Any] = field(default_factory=dict)
     lab: dict[str, Any] = field(default_factory=dict)
     rl: dict[str, Any] = field(default_factory=dict)
+    feedback: dict[str, Any] = field(default_factory=dict)
 
 
 def load_config(path: str) -> Settings:
@@ -109,4 +110,5 @@ def load_config(path: str) -> Settings:
         ensemble=data.get("ensemble", {}),
         lab=data.get("lab", {}),
         rl=data.get("rl", {}),
+        feedback=data.get("feedback", {}),
     )

@@ -183,3 +183,51 @@ rl:
     weight_allocator: {enabled: true, exploration_rate: 0.1}
     position_sizer: {enabled: true, algorithm: "PPO"}
     exit_manager: {enabled: true, algorithm: "DQN"}
+
+feedback:
+  daily_weight_update:
+    enabled: true
+    lookback_days: 30
+    learning_rate: 0.10
+    min_signals: 5
+    weight_min: 0.05
+    weight_max: 0.30
+    cron_hour_utc: 22
+    cron_minute: 0
+  weekly_retrain:
+    enabled: true
+    model_type: momentum_predictor
+    train_years: 3
+    gap_days: 30
+    validation_days: 90
+    acceptance_threshold: 1.02
+    min_train_samples: 500
+    xgboost:
+      n_estimators: 200
+      max_depth: 5
+      learning_rate: 0.05
+      subsample: 0.8
+      colsample_bytree: 0.8
+      reg_alpha: 1.0
+      reg_lambda: 1.0
+    feature_selection:
+      method: mutual_information
+      top_k: 30
+      max_missing_pct: 0.30
+      max_correlation: 0.95
+    cron_day_of_week: sun
+    cron_hour_utc: 3
+  monthly_evolution:
+    enabled: true
+    bottom_pct: 0.20
+    lookback_days: 90
+    cron_day: 1
+    cron_hour_utc: 4
+  regime_playbook:
+    enabled: true
+    lookback_days: 90
+    min_observations: 30
+  retrospective:
+    enabled: true
+    cron_day: 2
+    cron_hour_utc: 5

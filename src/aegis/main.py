@@ -127,6 +127,11 @@ async def run_live(config_path: str) -> None:
 
     scheduler.add_job(signal_pipeline_job, "interval", seconds=300, id="signal_pipeline")
     scheduler.add_job(check_exits_job, "interval", seconds=60, id="check_exits")
+
+    # Register feedback loop jobs
+    from aegis.feedback.scheduler import register_feedback_jobs
+    register_feedback_jobs(scheduler, db, config.feedback)
+
     scheduler.start()
     logger.info("Scheduler started")
 
@@ -207,6 +212,11 @@ async def run_lab(config_path: str) -> None:
 
     scheduler.add_job(lab_signal_job, "interval", seconds=signal_interval, id="lab_signal")
     scheduler.add_job(lab_exit_job, "interval", seconds=exit_interval, id="lab_exits")
+
+    # Register feedback loop jobs
+    from aegis.feedback.scheduler import register_feedback_jobs
+    register_feedback_jobs(scheduler, db, config.feedback)
+
     scheduler.start()
     logger.info("Lab scheduler started (signal=%ds, exits=%ds)", signal_interval, exit_interval)
 
