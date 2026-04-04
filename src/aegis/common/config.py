@@ -62,6 +62,7 @@ class Settings:
     agents: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
     ensemble: dict[str, Any] = field(default_factory=dict)
     lab: dict[str, Any] = field(default_factory=dict)
+    rl: dict[str, Any] = field(default_factory=dict)
 
 
 def load_config(path: str) -> Settings:
@@ -107,4 +108,5 @@ def load_config(path: str) -> Settings:
         agents=data.get("agents", {}),
         ensemble=data.get("ensemble", {}),
         lab=data.get("lab", {}),
+        rl=data.get("rl", {}),
     )

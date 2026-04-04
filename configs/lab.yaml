@@ -1,11 +1,23 @@
 mode: lab
-confidence_threshold: 0.45
+confidence_threshold: 0.25
 max_risk_per_trade: 0.05
-max_open_positions: 5
+max_open_positions: 10
 kelly_fraction: 0.5
 daily_drawdown_halt: -0.15
 weekly_drawdown_halt: -0.25
 initial_capital: 5000.0
+
+backtest:
+  symbols:
+    - BTC/USDT
+    - ETH/USDT
+    - SOL/USDT
+    - BNB/USDT
+    - XRP/USDT
+  timeframe: 1h
+  start_date: "2025-04-01"
+  end_date: "2026-04-01"
+  commission_pct: 0.001
 
 symbols:
   crypto:
@@ -163,3 +175,11 @@ risk:
   default_win_rate: 0.45
   default_avg_win: 0.02
   default_avg_loss: 0.015
+
+rl:
+  enabled: false
+  shadow_mode: true
+  components:
+    weight_allocator: {enabled: true, exploration_rate: 0.1}
+    position_sizer: {enabled: true, algorithm: "PPO"}
+    exit_manager: {enabled: true, algorithm: "DQN"}

@@ -31,3 +31,11 @@ class BrokerError(AegisError):
 
 class OrderError(BrokerError):
     """Order placement or management error."""
+
+
+class RLError(AegisError):
+    """RL meta-controller error."""
+
+
+class RLTrainingError(RLError):
+    """RL model training failure."""

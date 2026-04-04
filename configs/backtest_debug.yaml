@@ -1,7 +1,7 @@
 mode: backtest
 confidence_threshold: 0.25
 max_risk_per_trade: 0.05
-max_open_positions: 5
+max_open_positions: 10
 kelly_fraction: 0.5
 daily_drawdown_halt: -0.15
 weekly_drawdown_halt: -0.25
@@ -12,6 +12,8 @@ backtest:
     - BTC/USDT
     - ETH/USDT
     - SOL/USDT
+    - BNB/USDT
+    - XRP/USDT
   timeframe: 1h
   start_date: "2025-04-01"
   end_date: "2026-04-01"
@@ -22,6 +24,8 @@ symbols:
     - BTC/USDT
     - ETH/USDT
     - SOL/USDT
+    - BNB/USDT
+    - XRP/USDT
 
 database:
   host: ${DB_HOST}

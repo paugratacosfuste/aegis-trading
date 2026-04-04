@@ -40,3 +40,28 @@ def calculate_stop_loss(
         return entry_price - stop_distance
     else:
         return entry_price + stop_distance
+
+
+def update_trailing_stop(
+    current_stop: float,
+    current_price: float,
+    direction: str,
+    atr_14: float,
+    unrealized_pnl_pct: float,
+) -> float:
+    """Trailing stop: tightens as profit grows.
+
+    Only activates once >1% profitable. Never loosens the stop.
+    Trail distance = 1.5 * ATR.
+    """
+    if direction == "LONG" and unrealized_pnl_pct > 0.01:
+        trail_distance = atr_14 * 1.5
+        new_stop = current_price - trail_distance
+        return max(new_stop, current_stop)
+
+    if direction == "SHORT" and unrealized_pnl_pct > 0.01:
+        trail_distance = atr_14 * 1.5
+        new_stop = current_price + trail_distance
+        return min(new_stop, current_stop)
+
+    return current_stop

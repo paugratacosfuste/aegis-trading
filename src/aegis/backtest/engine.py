@@ -18,6 +18,7 @@ from aegis.backtest.regime_detector import PriceRegimeDetector
 from aegis.common.types import MarketDataPoint, Position
 from aegis.ensemble.voter import vote
 from aegis.risk.risk_manager import RiskManager
+from aegis.risk.stop_loss import update_trailing_stop
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ class BacktestEngine:
         max_open_positions: int = 5,
         max_risk_pct: float = 0.05,
         agents: list[BaseAgent] | None = None,
+        shadow_hook=None,
     ):
         self.initial_capital = initial_capital
         self.equity = initial_capital
@@ -46,6 +48,7 @@ class BacktestEngine:
             portfolio_value=initial_capital,
         )
         self._regime_detector = PriceRegimeDetector()
+        self._shadow_hook = shadow_hook
 
         self._positions: list[dict] = []
         self._closed_trades: list[dict] = []
@@ -100,8 +103,9 @@ class BacktestEngine:
             current_price = window[-1].close
             symbol = window[-1].symbol
 
-            # Check stop-losses on open positions
-            self._check_exits(current_price, i)
+            # Check exits on open positions (trailing stop, take-profit, stop-loss, time)
+            atr = self._compute_atr(window[-14:]) if len(window) >= 14 else self._compute_atr(window)
+            self._check_exits(current_price, i, atr_14=atr)
 
             # Detect regime periodically
             if (i - MIN_LOOKBACK) % _REGIME_INTERVAL == 0:
@@ -185,6 +189,12 @@ class BacktestEngine:
             quantity = verdict.position_size / current_price if current_price > 0 else 0
             commission = verdict.position_size * self._commission_pct
 
+            risk_amount = abs(current_price - verdict.stop_loss)
+            if decision.action == "LONG":
+                take_profit = current_price + 3.0 * risk_amount
+            else:
+                take_profit = current_price - 3.0 * risk_amount
+
             self._positions.append(
                 {
                     "id": f"bt-{i}",
@@ -194,6 +204,10 @@ class BacktestEngine:
                     "entry_price": current_price,
                     "entry_index": i,
                     "stop_loss": verdict.stop_loss,
+                    "original_stop": verdict.stop_loss,
+                    "take_profit": take_profit,
+                    "risk_amount": risk_amount,
+                    "partial_taken": False,
                     "position_value": verdict.position_size,
                     "commission_entry": commission,
                 }
@@ -266,12 +280,16 @@ class BacktestEngine:
                 regime = self._regime_detector.predict(regime_window)
             self._debug_regime_counts[regime] = self._debug_regime_counts.get(regime, 0) + 1
 
-            # Check stop-losses on all open positions (need per-symbol prices)
+            # Check exits on all open positions (need per-symbol prices and ATRs)
             current_prices = {
                 sym: candles[i].close
                 for sym, candles in candles_by_symbol.items()
             }
-            self._check_exits_multi(current_prices, i)
+            current_atrs = {
+                sym: self._compute_atr(candles[max(0, i + 1 - 14) : i + 1])
+                for sym, candles in candles_by_symbol.items()
+            }
+            self._check_exits_multi(current_prices, i, current_atrs)
 
             # Process each symbol
             for symbol, candles in candles_by_symbol.items():
@@ -290,6 +308,15 @@ class BacktestEngine:
                     continue
 
                 decision = vote(signals, self._confidence_threshold, regime=regime)
+
+                # Shadow hook: record weight allocation prediction
+                if self._shadow_hook and hasattr(self._shadow_hook, 'tracker') and self._shadow_hook.tracker:
+                    try:
+                        self._shadow_hook.tracker.on_ensemble_vote(
+                            signals, regime, self.equity, self._equity_curve,
+                        )
+                    except Exception:
+                        pass
 
                 if decision.action == "NO_TRADE":
                     self._debug_no_trade += 1
@@ -343,6 +370,12 @@ class BacktestEngine:
                 quantity = verdict.position_size / current_price if current_price > 0 else 0
                 commission = verdict.position_size * self._commission_pct
 
+                risk_amount = abs(current_price - verdict.stop_loss)
+                if decision.action == "LONG":
+                    take_profit = current_price + 3.0 * risk_amount
+                else:
+                    take_profit = current_price - 3.0 * risk_amount
+
                 self._positions.append(
                     {
                         "id": f"bt-{symbol}-{i}",
@@ -352,6 +385,10 @@ class BacktestEngine:
                         "entry_price": current_price,
                         "entry_index": i,
                         "stop_loss": verdict.stop_loss,
+                        "original_stop": verdict.stop_loss,
+                        "take_profit": take_profit,
+                        "risk_amount": risk_amount,
+                        "partial_taken": False,
                         "position_value": verdict.position_size,
                         "commission_entry": commission,
                     }
@@ -373,19 +410,19 @@ class BacktestEngine:
 
         return self._build_results()
 
-    def _check_exits_multi(self, prices: dict[str, float], index: int) -> None:
-        """Check stop-losses using per-symbol prices."""
+    def _check_exits_multi(self, prices: dict[str, float], index: int, atrs: dict[str, float] | None = None) -> None:
+        """Check exits using per-symbol prices and ATRs."""
         remaining = []
         for pos in self._positions:
             price = prices.get(pos["symbol"], pos["entry_price"])
-            triggered = False
-            if pos["direction"] == "LONG" and price <= pos["stop_loss"]:
-                triggered = True
-            elif pos["direction"] == "SHORT" and price >= pos["stop_loss"]:
-                triggered = True
+            atr = (atrs or {}).get(pos["symbol"], 500.0)
+            exit_reason = self._evaluate_exit(pos, price, index, atr)
 
-            if triggered:
-                self._close_position(pos, price, index, "stop_loss")
+            if exit_reason == "take_profit_partial":
+                self._partial_close(pos, price, index)
+                remaining.append(pos)
+            elif exit_reason is not None:
+                self._close_position(pos, price, index, exit_reason)
             else:
                 remaining.append(pos)
         self._positions = remaining
@@ -401,20 +438,118 @@ class BacktestEngine:
                 unrealized += pos["quantity"] * (pos["entry_price"] - price)
         self._equity_curve.append(self.equity + unrealized)
 
-    def _check_exits(self, current_price: float, index: int) -> None:
+    def _check_exits(self, current_price: float, index: int, atr_14: float = 500.0) -> None:
         remaining = []
         for pos in self._positions:
-            triggered = False
-            if pos["direction"] == "LONG" and current_price <= pos["stop_loss"]:
-                triggered = True
-            elif pos["direction"] == "SHORT" and current_price >= pos["stop_loss"]:
-                triggered = True
+            exit_reason = self._evaluate_exit(pos, current_price, index, atr_14)
 
-            if triggered:
-                self._close_position(pos, current_price, index, "stop_loss")
+            if exit_reason == "take_profit_partial":
+                self._partial_close(pos, current_price, index)
+                remaining.append(pos)
+            elif exit_reason is not None:
+                self._close_position(pos, current_price, index, exit_reason)
             else:
                 remaining.append(pos)
         self._positions = remaining
+
+    # -- Exit evaluation constants --
+    _TIME_EXIT_BARS = 72  # 1.5x expected holding (~48h for 1h bars)
+    _TIME_EXIT_R_THRESHOLD = 0.5
+
+    def _evaluate_exit(self, pos: dict, current_price: float, index: int, atr_14: float) -> str | None:
+        """Evaluate all exit conditions for a position. Returns exit reason or None."""
+        direction = pos["direction"]
+        entry = pos["entry_price"]
+        risk_amount = pos.get("risk_amount", abs(entry - pos["stop_loss"]))
+
+        # Compute R-multiple
+        if direction == "LONG":
+            pnl_per_unit = current_price - entry
+        else:
+            pnl_per_unit = entry - current_price
+
+        r_multiple = pnl_per_unit / risk_amount if risk_amount > 0 else 0.0
+
+        # 1. Full take-profit at 3R
+        if r_multiple >= 3.0:
+            return "take_profit"
+
+        # 2. Partial take-profit at 1.5R (if not already taken)
+        if r_multiple >= 1.5 and not pos.get("partial_taken", False):
+            return "take_profit_partial"
+
+        # 3. Trailing stop update + check
+        unrealized_pnl_pct = pnl_per_unit / entry if entry > 0 else 0.0
+        old_stop = pos["stop_loss"]
+        new_stop = update_trailing_stop(
+            current_stop=old_stop,
+            current_price=current_price,
+            direction=direction,
+            atr_14=atr_14,
+            unrealized_pnl_pct=unrealized_pnl_pct,
+        )
+        pos["stop_loss"] = new_stop  # Tighten in-place (mutable dict)
+
+        # Check if trailing stop was hit
+        if new_stop != old_stop:
+            # Stop was tightened — check if price already below the new stop
+            if direction == "LONG" and current_price <= new_stop:
+                return "trailing_stop"
+            if direction == "SHORT" and current_price >= new_stop:
+                return "trailing_stop"
+
+        # Check original/tightened stop
+        original_stop = pos.get("original_stop", pos.get("stop_loss"))
+        if direction == "LONG" and current_price <= pos["stop_loss"]:
+            if pos["stop_loss"] != original_stop:
+                return "trailing_stop"
+            return "stop_loss"
+        if direction == "SHORT" and current_price >= pos["stop_loss"]:
+            if pos["stop_loss"] != original_stop:
+                return "trailing_stop"
+            return "stop_loss"
+
+        # 4. Time-based exit
+        bars_held = index - pos["entry_index"]
+        if bars_held > self._TIME_EXIT_BARS and abs(r_multiple) < self._TIME_EXIT_R_THRESHOLD:
+            return "time_exit"
+
+        return None
+
+    def _partial_close(self, pos: dict, exit_price: float, index: int) -> None:
+        """Close 50% of position as partial take-profit."""
+        close_qty = pos["quantity"] * 0.5
+
+        if pos["direction"] == "LONG":
+            pnl = close_qty * (exit_price - pos["entry_price"])
+        else:
+            pnl = close_qty * (pos["entry_price"] - exit_price)
+
+        commission_exit = abs(close_qty * exit_price) * self._commission_pct
+        # Attribute half the entry commission to this partial close
+        commission_entry_partial = pos["commission_entry"] * 0.5
+        net_pnl = pnl - commission_entry_partial - commission_exit
+
+        self.equity += net_pnl
+
+        self._closed_trades.append(
+            {
+                "symbol": pos["symbol"],
+                "direction": pos["direction"],
+                "entry_price": pos["entry_price"],
+                "exit_price": exit_price,
+                "quantity": close_qty,
+                "gross_pnl": pnl,
+                "net_pnl": net_pnl,
+                "commission": commission_entry_partial + commission_exit,
+                "exit_reason": "take_profit_partial",
+            }
+        )
+
+        # Update position: reduce quantity, mark partial taken, halve remaining commission
+        pos["quantity"] = pos["quantity"] - close_qty
+        pos["partial_taken"] = True
+        pos["commission_entry"] = pos["commission_entry"] * 0.5
 
     def _close_position(
         self, pos: dict, exit_price: float, index: int, reason: str
@@ -429,19 +564,25 @@ class BacktestEngine:
 
         self.equity += net_pnl
 
-        self._closed_trades.append(
-            {
-                "symbol": pos["symbol"],
-                "direction": pos["direction"],
-                "entry_price": pos["entry_price"],
-                "exit_price": exit_price,
-                "quantity": pos["quantity"],
-                "gross_pnl": pnl,
-                "net_pnl": net_pnl,
-                "commission": pos["commission_entry"] + commission_exit,
-                "exit_reason": reason,
-            }
-        )
+        trade = {
+            "symbol": pos["symbol"],
+            "direction": pos["direction"],
+            "entry_price": pos["entry_price"],
+            "exit_price": exit_price,
+            "quantity": pos["quantity"],
+            "gross_pnl": pnl,
+            "net_pnl": net_pnl,
+            "commission": pos["commission_entry"] + commission_exit,
+            "exit_reason": reason,
+        }
+        self._closed_trades.append(trade)
+
+        # Shadow hook: track trade outcome
+        if self._shadow_hook and hasattr(self._shadow_hook, 'tracker') and self._shadow_hook.tracker:
+            try:
+                self._shadow_hook.tracker.on_trade_closed(trade)
+            except Exception:
+                pass
 
     def _close_all(self, price: float, index: int) -> None:
         for pos in self._positions:
@@ -483,7 +624,7 @@ class BacktestEngine:
         self._print_debug_summary()
         self._risk_manager.print_debug_summary()
 
-        return {
+        results = {
             "equity_curve": self._equity_curve,
             "trades": self._closed_trades,
             "metrics": {
@@ -500,6 +641,15 @@ class BacktestEngine:
                 ),
             },
         }
+
+        # Add shadow summary if available
+        if self._shadow_hook:
+            try:
+                results["shadow_summary"] = self._shadow_hook.get_summary()
+            except Exception:
+                pass
+
+        return results
 
     def _print_debug_summary(self) -> None:
         """Print ensemble diagnostic summary at end of backtest."""
