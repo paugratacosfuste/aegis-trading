@@ -107,19 +107,19 @@ class MarketDataRepository:
             """,
             (symbol,),
         )
-        return row[0] if row else None
+        return row["close"] if row else None
 
     @staticmethod
-    def _row_to_point(row: tuple) -> MarketDataPoint:
+    def _row_to_point(row: dict) -> MarketDataPoint:
         return MarketDataPoint(
-            symbol=row[0],
-            asset_class=row[1],
-            timestamp=row[2],
-            timeframe=row[3],
-            open=row[4],
-            high=row[5],
-            low=row[6],
-            close=row[7],
-            volume=row[8],
-            source=row[9],
+            symbol=row["symbol"],
+            asset_class=row["asset_class"],
+            timestamp=row["timestamp"],
+            timeframe=row["timeframe"],
+            open=row["open"],
+            high=row["high"],
+            low=row["low"],
+            close=row["close"],
+            volume=row["volume"],
+            source=row["source"],
         )

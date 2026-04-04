@@ -132,9 +132,19 @@ agents:
     - {id: crypto_09, strategy: liquidations, params: {}}
     - {id: crypto_10, strategy: defi_tvl, params: {}}
 
+lab:
+  templates: [A, B, C, D, E, F, G, H, I, J]
+  burn_in_days: 14
+  evaluation_days: 60
+  tournament_interval_days: 7
+  signal_interval_sec: 300
+  exit_check_interval_sec: 60
+  virtual_capital: 100000.0
+
 ensemble:
   regime: normal
   confidence_threshold: 0.45
+  # enabled_types: [technical, statistical, momentum]  # uncomment to limit agent types
 
 risk:
   atr_period: 14

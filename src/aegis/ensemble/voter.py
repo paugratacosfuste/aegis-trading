@@ -9,12 +9,15 @@ Phase 3 additions: VETO gates, macro regime extraction, asset-class scoping.
 Backward compatible: old signature with just signals + threshold still works.
 """
 
+import logging
 from collections import defaultdict
 from datetime import datetime
 
 from aegis.common.types import AgentSignal, TradeDecision
 from aegis.ensemble.aggregator import aggregate_intra_type
 from aegis.ensemble.weights import BASE_TYPE_WEIGHTS, apply_regime_weights
+
+logger = logging.getLogger(__name__)
 
 DIRECTION_THRESHOLD = 0.1  # Minimum |direction| to generate a trade
 
@@ -97,6 +100,13 @@ def vote(
 
     symbol = signals[0].symbol
 
+    # Debug: count signals with meaningful direction
+    active_count = sum(1 for s in signals if abs(s.direction) > 0.05)
+    logger.debug(
+        "ENSEMBLE [%s] input: %d signals, %d with |dir|>0.05",
+        symbol, len(signals), active_count,
+    )
+
     # Stage 0: Asset-class scoping
     signals = _filter_by_asset_class(signals, symbol)
     if not signals:
@@ -105,6 +115,7 @@ def vote(
     # Stage 0b: VETO gate
     vetoed, veto_reason = _apply_veto_gate(signals, symbol)
     if vetoed:
+        logger.debug("ENSEMBLE [%s] VETOED: %s", symbol, veto_reason)
         return _no_trade(veto_reason, symbol)
 
     # Extract fundamental modifier before filtering non-voting types
@@ -146,6 +157,19 @@ def vote(
     }
     adjusted_weights = apply_regime_weights(present_weights, regime)
 
+    # Log regime and weight adjustments
+    if regime != "normal":
+        adj_parts = []
+        for t in sorted(present_weights):
+            raw = present_weights[t]
+            raw_norm = raw / sum(present_weights.values()) if sum(present_weights.values()) > 0 else 0
+            adj = adjusted_weights.get(t, 0.0)
+            adj_parts.append(f"{t} {raw_norm:.2f}->{adj:.2f}")
+        logger.debug(
+            "ENSEMBLE [%s] regime=%s weights: %s",
+            symbol, regime, ", ".join(adj_parts),
+        )
+
     total_weight = 0.0
     weighted_direction = 0.0
     weighted_confidence = 0.0
@@ -157,6 +181,7 @@ def vote(
         total_weight += w * sig.confidence
 
     if total_weight == 0:
+        logger.debug("ENSEMBLE [%s] REJECTED: zero total weight", symbol)
         return _no_trade("Zero total weight", symbol)
 
     final_direction = weighted_direction / total_weight
@@ -165,21 +190,41 @@ def vote(
     # Stage 3: Apply fundamental confidence modifier
     final_confidence = min(1.0, max(0.0, final_confidence * fund_modifier))
 
+    # Debug: log weighted results and per-type breakdown
+    type_breakdown = ", ".join(
+        f"{t}={s.direction:+.3f}@{s.confidence:.3f}"
+        for t, s in type_signals.items()
+    )
+    logger.debug(
+        "ENSEMBLE [%s] weighted_dir=%.4f conf=%.4f types=[%s]",
+        symbol, final_direction, final_confidence, type_breakdown,
+    )
+
     # Conflict resolution
     action, final_direction, final_confidence, reason = _resolve_conflicts(
         type_signals, final_direction, final_confidence
     )
 
     if action == "NO_TRADE":
+        logger.debug("ENSEMBLE [%s] REJECTED: conflict — %s", symbol, reason)
         return _no_trade(reason, symbol)
 
     if final_confidence < confidence_threshold:
+        logger.debug(
+            "ENSEMBLE [%s] REJECTED: conf %.4f < threshold %.2f (gap=%.4f)",
+            symbol, final_confidence, confidence_threshold,
+            confidence_threshold - final_confidence,
+        )
         return _no_trade(
             f"Confidence {final_confidence:.2f} below threshold {confidence_threshold}",
             symbol,
         )
 
     if abs(final_direction) < DIRECTION_THRESHOLD:
+        logger.debug(
+            "ENSEMBLE [%s] REJECTED: |dir| %.4f < %.1f",
+            symbol, abs(final_direction), DIRECTION_THRESHOLD,
+        )
         return _no_trade(
             f"Direction {final_direction:.3f} too weak",
             symbol,

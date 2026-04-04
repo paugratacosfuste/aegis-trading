@@ -21,14 +21,14 @@ class TradeLogger:
                 commission_entry, estimated_slippage, total_costs,
                 ensemble_confidence, ensemble_direction, agent_signals_json,
                 regime_at_entry, initial_stop_loss, risk_amount,
-                risk_pct_of_portfolio, feature_snapshot_json
+                risk_pct_of_portfolio, feature_snapshot_json, cohort_id
             ) VALUES (
                 %s, %s, %s, %s, %s,
                 %s, %s, %s, %s,
                 %s, %s, %s,
                 %s, %s, %s,
                 %s, %s, %s,
-                %s, %s
+                %s, %s, %s
             )
         """
         self._db.execute(sql, (
@@ -52,6 +52,7 @@ class TradeLogger:
             trade.risk_amount,
             trade.risk_pct_of_portfolio,
             trade.feature_snapshot_json,
+            trade.cohort_id,
         ))
 
     def log_exit(
@@ -102,12 +103,22 @@ class TradeLogger:
             (trade_id,),
         )
 
-    def get_open_trades(self) -> list[dict]:
+    def get_open_trades(self, cohort_id: str | None = None) -> list[dict]:
+        if cohort_id is not None:
+            return self._db.fetch_all(
+                "SELECT * FROM trades WHERE exit_price IS NULL AND cohort_id = %s ORDER BY entry_time DESC",
+                (cohort_id,),
+            )
         return self._db.fetch_all(
             "SELECT * FROM trades WHERE exit_price IS NULL ORDER BY entry_time DESC"
         )
 
-    def get_closed_trades(self, limit: int = 100) -> list[dict]:
+    def get_closed_trades(self, limit: int = 100, cohort_id: str | None = None) -> list[dict]:
+        if cohort_id is not None:
+            return self._db.fetch_all(
+                "SELECT * FROM trades WHERE exit_price IS NOT NULL AND cohort_id = %s ORDER BY exit_time DESC LIMIT %s",
+                (cohort_id, limit),
+            )
         return self._db.fetch_all(
             "SELECT * FROM trades WHERE exit_price IS NOT NULL ORDER BY exit_time DESC LIMIT %s",
             (limit,),

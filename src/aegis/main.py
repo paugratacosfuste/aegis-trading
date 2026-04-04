@@ -35,27 +35,36 @@ def run_backtest(config_path: str) -> None:
     config = load_config(config_path)
     bt_cfg = config.backtest
 
-    symbol = bt_cfg.get("symbol", "BTC/USDT")
-    binance_symbol = symbol.replace("/", "")
+    # Support single symbol (backward compat) or multiple symbols
+    symbols = bt_cfg.get("symbols", [bt_cfg.get("symbol", "BTC/USDT")])
+    if isinstance(symbols, str):
+        symbols = [symbols]
+
     start = bt_cfg.get("start_date", "1 Apr, 2025")
     end = bt_cfg.get("end_date", "1 Apr, 2026")
+    interval = bt_cfg.get("timeframe", "1h")
 
-    logger.info("Downloading historical data for %s...", symbol)
-    candles = download_from_binance(
-        symbol=binance_symbol,
-        interval=bt_cfg.get("timeframe", "1h"),
-        start_str=start,
-        end_str=end,
-    )
-    logger.info("Downloaded %d candles", len(candles))
+    candles_by_symbol: dict[str, list] = {}
+    for sym in symbols:
+        binance_sym = sym.replace("/", "")
+        logger.info("Downloading historical data for %s...", sym)
+        candles = download_from_binance(
+            symbol=binance_sym,
+            interval=interval,
+            start_str=start,
+            end_str=end,
+        )
+        logger.info("Downloaded %d candles for %s", len(candles), sym)
+        candles_by_symbol[sym] = candles
 
     # Use config-driven agents if defined, else Phase 1 defaults
+    enabled_types = config.ensemble.get("enabled_types")
     agents = (
-        create_agents_from_config(config.agents)
+        create_agents_from_config(config.agents, enabled_types=enabled_types)
         if config.agents
         else create_default_agents()
     )
-    logger.info("Created %d agents", len(agents))
+    logger.info("Created %d agents (enabled_types=%s)", len(agents), enabled_types or "all")
 
     engine = BacktestEngine(
         initial_capital=config.initial_capital,
@@ -66,7 +75,10 @@ def run_backtest(config_path: str) -> None:
         agents=agents,
     )
 
-    results = engine.run(candles)
+    if len(candles_by_symbol) == 1:
+        results = engine.run(next(iter(candles_by_symbol.values())))
+    else:
+        results = engine.run_multi(candles_by_symbol)
     print_report(results)
     save_report(results, "backtest_results.json")
 
@@ -131,14 +143,103 @@ async def run_live(config_path: str) -> None:
         logger.info("Aegis shut down.")
 
 
-def main() -> None:
+async def run_lab(config_path: str) -> None:
+    """Run lab mode: parallel paper trading with cohort system."""
+    from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+    from aegis.agents.factory import create_agents_from_config, create_default_agents
+    from aegis.common.db import DatabasePool
+    from aegis.data.binance_ws import BinanceWebSocketCollector
+    from aegis.data.repository import MarketDataRepository
+    from aegis.lab.config_templates import get_default_templates
+    from aegis.lab.orchestrator import LabOrchestrator
+    from aegis.lab.repository import CohortRepository
+
+    config = load_config(config_path)
+    lab_cfg = config.lab
+    logger.info("Starting Aegis in LAB mode")
+
+    # Create shared agents
+    agents = (
+        create_agents_from_config(config.agents)
+        if config.agents
+        else create_default_agents()
+    )
+    logger.info("Created %d shared agents for lab", len(agents))
+
+    # Database
+    db = DatabasePool.from_config(config.database)
+    repo = CohortRepository(db)
+    logger.info("Database pool created")
+
+    # Initialize orchestrator
+    templates_to_use = lab_cfg.get("templates", list("ABCDEFGHIJ"))
+    cohorts = get_default_templates()
+    cohorts = [c for c in cohorts if c.cohort_id.replace("cohort_", "") in templates_to_use]
+
+    orchestrator = LabOrchestrator(
+        repository=repo,
+        agents=agents,
+        cohorts=cohorts,
+        agents_config=config.agents,
+    )
+    logger.info("Lab orchestrator initialized with %d cohorts", len(cohorts))
+
+    # Binance WS for market data
+    crypto_symbols = [s.replace("/", "").lower() for s in config.symbols.get("crypto", [])]
+    market_repo = MarketDataRepository(db)
+    collector = BinanceWebSocketCollector(
+        repository=market_repo,
+        symbols=crypto_symbols,
+        interval="1m",
+    )
+
+    # Scheduler
+    scheduler = AsyncIOScheduler()
+    signal_interval = lab_cfg.get("signal_interval_sec", 300)
+    exit_interval = lab_cfg.get("exit_check_interval_sec", 60)
+
+    async def lab_signal_job():
+        logger.info("Lab signal pipeline tick (%d cohorts)", len(orchestrator.get_active_runners()))
+
+    async def lab_exit_job():
+        logger.debug("Lab exit check")
+
+    scheduler.add_job(lab_signal_job, "interval", seconds=signal_interval, id="lab_signal")
+    scheduler.add_job(lab_exit_job, "interval", seconds=exit_interval, id="lab_exits")
+    scheduler.start()
+    logger.info("Lab scheduler started (signal=%ds, exits=%ds)", signal_interval, exit_interval)
+
+    try:
+        await collector.start()
+    except (KeyboardInterrupt, SystemExit):
+        pass
+    finally:
+        collector.stop()
+        scheduler.shutdown()
+        db.close()
+        logger.info("Lab mode shut down.")
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser."""
     parser = argparse.ArgumentParser(description="Aegis Trading System")
     parser.add_argument("--config", required=True, help="Path to config YAML")
     parser.add_argument("--backtest", action="store_true", help="Run backtest mode")
+    parser.add_argument("--lab", action="store_true", help="Run lab mode (parallel paper trading)")
+    return parser
+
+
+def main() -> None:
+    parser = _build_parser()
     args = parser.parse_args()
 
-    if args.backtest:
+    if args.backtest and args.lab:
+        parser.error("Cannot use --backtest and --lab together")
+    elif args.backtest:
         run_backtest(args.config)
+    elif args.lab:
+        asyncio.run(run_lab(args.config))
     else:
         asyncio.run(run_live(args.config))
 

@@ -67,16 +67,21 @@ def _ensure_registered() -> None:
 
 def create_agents_from_config(
     agents_config: dict[str, list[dict[str, Any]]],
+    enabled_types: list[str] | None = None,
 ) -> list[BaseAgent]:
     """Create all agents defined in the YAML agents section.
 
     agents_config shape:
         {"technical": [{"id": "tech_01", "strategy": "indicator", "params": {...}}, ...],
          "statistical": [...], ...}
+
+    If enabled_types is provided, only agent types in the list are created.
     """
     _ensure_registered()
     agents: list[BaseAgent] = []
     for agent_type, agent_defs in agents_config.items():
+        if enabled_types is not None and agent_type not in enabled_types:
+            continue
         for agent_def in agent_defs:
             agent_id = agent_def["id"]
             strategy = agent_def["strategy"]

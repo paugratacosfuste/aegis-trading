@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from typing import Any
 
 from psycopg2 import pool
+from psycopg2.extras import RealDictCursor
 
 from aegis.common.exceptions import DatabaseError
 
@@ -67,19 +68,20 @@ class DatabasePool:
                 cur.executemany(sql, params_list)
             conn.commit()
 
-    def fetch_one(self, sql: str, params: tuple | None = None) -> tuple | None:
-        """Execute a read query and return one row."""
+    def fetch_one(self, sql: str, params: tuple | None = None) -> dict | None:
+        """Execute a read query and return one row as a dict."""
         with self.get_connection() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(sql, params)
-                return cur.fetchone()
+                row = cur.fetchone()
+                return dict(row) if row is not None else None
 
-    def fetch_all(self, sql: str, params: tuple | None = None) -> list[tuple]:
-        """Execute a read query and return all rows."""
+    def fetch_all(self, sql: str, params: tuple | None = None) -> list[dict]:
+        """Execute a read query and return all rows as dicts."""
         with self.get_connection() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(sql, params)
-                return cur.fetchall()
+                return [dict(r) for r in cur.fetchall()]
 
     def close(self) -> None:
         """Close all connections in the pool."""

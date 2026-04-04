@@ -61,6 +61,7 @@ class Settings:
     backtest: dict[str, Any] = field(default_factory=dict)
     agents: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
     ensemble: dict[str, Any] = field(default_factory=dict)
+    lab: dict[str, Any] = field(default_factory=dict)
 
 
 def load_config(path: str) -> Settings:
@@ -105,4 +106,5 @@ def load_config(path: str) -> Settings:
         backtest=data.get("backtest", {}),
         agents=data.get("agents", {}),
         ensemble=data.get("ensemble", {}),
+        lab=data.get("lab", {}),
     )

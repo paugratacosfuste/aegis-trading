@@ -13,7 +13,7 @@ class TestStalenessChecker:
 
         db = MagicMock()
         now = datetime.now(timezone.utc)
-        db.fetch_one.return_value = (now - timedelta(seconds=10),)
+        db.fetch_one.return_value = {"max": now - timedelta(seconds=10)}
 
         checker = StalenessChecker(db, crypto_max_sec=30, equity_market_max_sec=300)
         is_stale, age = checker.check("BTC/USDT", "crypto")
@@ -26,7 +26,7 @@ class TestStalenessChecker:
 
         db = MagicMock()
         now = datetime.now(timezone.utc)
-        db.fetch_one.return_value = (now - timedelta(seconds=60),)
+        db.fetch_one.return_value = {"max": now - timedelta(seconds=60)}
 
         checker = StalenessChecker(db, crypto_max_sec=30, equity_market_max_sec=300)
         is_stale, age = checker.check("BTC/USDT", "crypto")
@@ -39,7 +39,7 @@ class TestStalenessChecker:
 
         db = MagicMock()
         now = datetime.now(timezone.utc)
-        db.fetch_one.return_value = (now - timedelta(seconds=120),)
+        db.fetch_one.return_value = {"max": now - timedelta(seconds=120)}
 
         checker = StalenessChecker(db, crypto_max_sec=30, equity_market_max_sec=300)
         is_stale, age = checker.check("AAPL", "equity", market_open=True)
@@ -51,7 +51,7 @@ class TestStalenessChecker:
 
         db = MagicMock()
         now = datetime.now(timezone.utc)
-        db.fetch_one.return_value = (now - timedelta(seconds=600),)
+        db.fetch_one.return_value = {"max": now - timedelta(seconds=600)}
 
         checker = StalenessChecker(db, crypto_max_sec=30, equity_market_max_sec=300)
         is_stale, age = checker.check("AAPL", "equity", market_open=True)
@@ -63,7 +63,7 @@ class TestStalenessChecker:
 
         db = MagicMock()
         now = datetime.now(timezone.utc)
-        db.fetch_one.return_value = (now - timedelta(hours=12),)
+        db.fetch_one.return_value = {"max": now - timedelta(hours=12)}
 
         checker = StalenessChecker(
             db, crypto_max_sec=30, equity_market_max_sec=300,

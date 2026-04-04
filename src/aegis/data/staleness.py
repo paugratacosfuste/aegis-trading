@@ -33,10 +33,10 @@ class StalenessChecker:
             (symbol,),
         )
 
-        if row is None or row[0] is None:
+        if row is None or row["max"] is None:
             return True, float("inf")
 
-        latest_ts = row[0]
+        latest_ts = row["max"]
         if latest_ts.tzinfo is None:
             latest_ts = latest_ts.replace(tzinfo=timezone.utc)
 

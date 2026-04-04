@@ -112,8 +112,7 @@ class TestDatabasePool:
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = [(1, "a"), (2, "b")]
-        mock_cursor.description = [("id",), ("name",)]
+        mock_cursor.fetchall.return_value = [{"id": 1, "name": "a"}, {"id": 2, "name": "b"}]
         mock_conn.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
 
@@ -131,7 +130,7 @@ class TestDatabasePool:
             )
 
             rows = db.fetch_all("SELECT * FROM foo")
-            assert rows == [(1, "a"), (2, "b")]
+            assert rows == [{"id": 1, "name": "a"}, {"id": 2, "name": "b"}]
             db.close()
 
     def test_fetch_one(self):
@@ -140,7 +139,7 @@ class TestDatabasePool:
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = (1, "a")
+        mock_cursor.fetchone.return_value = {"id": 1, "name": "a"}
         mock_conn.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
 
@@ -158,7 +157,7 @@ class TestDatabasePool:
             )
 
             row = db.fetch_one("SELECT * FROM foo WHERE id = %s", (1,))
-            assert row == (1, "a")
+            assert row == {"id": 1, "name": "a"}
             db.close()
 
     def test_execute_many(self):

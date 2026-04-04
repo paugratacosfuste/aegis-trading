@@ -150,7 +150,7 @@ class AgentSignal:
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class TradeDecision:
     action: str  # "LONG" | "SHORT" | "NO_TRADE"
     symbol: str
@@ -224,6 +224,7 @@ class TradeLog:
     risk_pct_of_portfolio: float
     exit_reason: str | None
     feature_snapshot_json: str  # JSON serialized
+    cohort_id: str | None = None
 
 
 @dataclass
