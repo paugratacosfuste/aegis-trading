@@ -52,6 +52,8 @@ class RiskManager:
         atr_14: float = 500.0,
         start_of_day_value: float | None = None,
         start_of_week_value: float | None = None,
+        volatility_regime: str = "normal",
+        timeframe: str = "1h",
     ) -> RiskVerdict:
         """Run all pre-trade checks. Returns APPROVE or REJECT."""
 
@@ -107,8 +109,8 @@ class RiskManager:
             entry_price=entry,
             direction=decision.action,
             atr_14=atr_14,
-            volatility_regime="normal",
-            timeframe="1h",
+            volatility_regime=volatility_regime,
+            timeframe=timeframe,
         )
 
         self._debug_approved += 1

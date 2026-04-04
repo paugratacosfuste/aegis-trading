@@ -1,5 +1,5 @@
 mode: backtest
-confidence_threshold: 0.25
+confidence_threshold: 0.60
 max_risk_per_trade: 0.05
 max_open_positions: 10
 kelly_fraction: 0.5
@@ -70,7 +70,7 @@ agents:
 
 ensemble:
   regime: normal
-  confidence_threshold: 0.25
+  confidence_threshold: 0.60
   enabled_types: [technical, statistical, momentum]
 
 risk:

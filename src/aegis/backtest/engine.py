@@ -63,6 +63,20 @@ class BacktestEngine:
         self._debug_max_conf_seen = 0.0
         self._debug_passed_ensemble = 0
         self._debug_risk_rejected = 0
+        self._debug_regime_counts: dict[str, int] = {}
+
+        # Per-symbol cooldown: bar index of last exit
+        self._cooldown: dict[str, int] = {}
+        self._cooldown_bars = 24  # 24 bars = 1 day on 1h
+
+    # HMM regime -> stop-loss volatility regime mapping
+    _REGIME_TO_VOLATILITY: dict[str, str] = {
+        "bull": "low",
+        "recovery": "normal",
+        "transition": "high",
+        "bear": "extreme",
+        "normal": "normal",
+    }
 
     def run(self, candles: list[MarketDataPoint]) -> dict:
         """Run backtest over candle history. Returns results dict."""
@@ -81,6 +95,9 @@ class BacktestEngine:
         self._debug_near_threshold = 0
         self._debug_rejection_reasons = {}
         self._debug_max_conf_seen = 0.0
+        self._debug_passed_ensemble = 0
+        self._debug_risk_rejected = 0
+        self._cooldown = {}
 
         # Train HMM regime detector on available data
         self._regime_detector = PriceRegimeDetector()
@@ -115,6 +132,17 @@ class BacktestEngine:
 
             # Generate signals from all agents
             self._debug_total_cycles += 1
+
+            # Cooldown: skip symbol if recently exited
+            last_exit = self._cooldown.get(symbol, -9999)
+            if i - last_exit < self._cooldown_bars:
+                self._debug_no_trade += 1
+                self._debug_rejection_reasons["cooldown"] = (
+                    self._debug_rejection_reasons.get("cooldown", 0) + 1
+                )
+                self._update_equity(current_price)
+                continue
+
             signals = []
             for agent in self._agents:
                 sig = agent.generate_signal(symbol, window)
@@ -175,9 +203,11 @@ class BacktestEngine:
             # Compute ATR from last 14 candles
             atr = self._compute_atr(window[-14:])
 
+            vol_regime = self._REGIME_TO_VOLATILITY.get(regime, "normal")
             self._risk_manager.update_portfolio_value(self.equity)
             verdict = self._risk_manager.evaluate(
-                decision, open_pos_objects, atr_14=atr
+                decision, open_pos_objects, atr_14=atr,
+                volatility_regime=vol_regime,
             )
 
             if not verdict.approved:
@@ -250,6 +280,7 @@ class BacktestEngine:
         self._debug_passed_ensemble = 0
         self._debug_risk_rejected = 0
         self._debug_regime_counts = {}
+        self._cooldown = {}
 
         # Find common length (all symbols should have same timestamp grid)
         min_len = min(len(c) for c in candles_by_symbol.values())
@@ -297,6 +328,16 @@ class BacktestEngine:
                 current_price = window[-1].close
 
                 self._debug_total_cycles += 1
+
+                # Cooldown: skip symbol if recently exited
+                last_exit = self._cooldown.get(symbol, -9999)
+                if i - last_exit < self._cooldown_bars:
+                    self._debug_no_trade += 1
+                    self._debug_rejection_reasons["cooldown"] = (
+                        self._debug_rejection_reasons.get("cooldown", 0) + 1
+                    )
+                    continue
+
                 signals = []
                 for agent in self._agents:
                     sig = agent.generate_signal(symbol, window)
@@ -358,9 +399,11 @@ class BacktestEngine:
                 ]
 
                 atr = self._compute_atr(window[-14:])
+                vol_regime = self._REGIME_TO_VOLATILITY.get(regime, "normal")
                 self._risk_manager.update_portfolio_value(self.equity)
                 verdict = self._risk_manager.evaluate(
-                    decision, open_pos_objects, atr_14=atr
+                    decision, open_pos_objects, atr_14=atr,
+                    volatility_regime=vol_regime,
                 )
 
                 if not verdict.approved:
@@ -563,6 +606,9 @@ class BacktestEngine:
         net_pnl = pnl - pos["commission_entry"] - commission_exit
 
         self.equity += net_pnl
+
+        # Record cooldown for this symbol
+        self._cooldown[pos["symbol"]] = index
 
         trade = {
             "symbol": pos["symbol"],
