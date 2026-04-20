@@ -1,6 +1,6 @@
 mode: backtest
 confidence_threshold: 0.45
-max_risk_per_trade: 0.05
+max_risk_per_trade: 0.02
 max_open_positions: 5
 kelly_fraction: 0.5
 daily_drawdown_halt: -0.15
@@ -93,10 +93,17 @@ agents:
     - {id: fund_14, strategy: market_cap, params: {tier: small}}
     - {id: fund_15, strategy: earnings_surprise, params: {}}
 
+  macro:
+    - {id: macro_01, strategy: yield_curve_fed, params: {}}
+    - {id: macro_02, strategy: risk_regime, params: {}}
+    - {id: macro_03, strategy: economic_cycle, params: {}}
+    - {id: macro_04, strategy: inflation_regime, params: {}}
+    - {id: macro_05, strategy: hmm_regime, params: {}}
+
 ensemble:
   regime: normal
   confidence_threshold: 0.45
-  enabled_types: [technical, statistical, momentum, fundamental]
+  enabled_types: [technical, statistical, momentum, fundamental, macro]
 
 risk:
   atr_period: 14

@@ -68,6 +68,7 @@ def _ensure_registered() -> None:
 def create_agents_from_config(
     agents_config: dict[str, list[dict[str, Any]]],
     enabled_types: list[str] | None = None,
+    macro_provider: Any | None = None,
 ) -> list[BaseAgent]:
     """Create all agents defined in the YAML agents section.
 
@@ -77,10 +78,11 @@ def create_agents_from_config(
 
     If enabled_types is provided, only agent types in the list are created.
     Fundamental agents automatically receive YahooFundamentalProvider.
+    Macro agents receive the provided macro_provider (or NullMacroProvider).
     """
     _ensure_registered()
 
-    # Lazy-create shared provider for fundamental agents
+    # Lazy-create shared providers
     fund_provider = None
 
     agents: list[BaseAgent] = []
@@ -100,6 +102,8 @@ def create_agents_from_config(
                     )
                     fund_provider = YahooFundamentalProvider()
                 agents.append(cls(agent_id, params, provider=fund_provider))
+            elif agent_type == "macro":
+                agents.append(cls(agent_id, params, provider=macro_provider))
             else:
                 agents.append(cls(agent_id, params))
     return agents

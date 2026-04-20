@@ -54,6 +54,7 @@ class RiskManager:
         start_of_week_value: float | None = None,
         volatility_regime: str = "normal",
         timeframe: str = "1h",
+        entry_price: float | None = None,
     ) -> RiskVerdict:
         """Run all pre-trade checks. Returns APPROVE or REJECT."""
 
@@ -82,8 +83,8 @@ class RiskManager:
                 f"Already positioned in {decision.symbol}",
             )
 
-        # Calculate position size
-        size = calculate_position_size(
+        # Gate: Kelly must show positive edge before risking capital
+        kelly_size = calculate_position_size(
             portfolio_value=self._portfolio_value,
             win_rate=self._win_rate,
             avg_win=self._avg_win,
@@ -92,18 +93,14 @@ class RiskManager:
             max_risk_pct=self._max_risk_pct,
         )
 
-        if size <= 0:
+        if kelly_size <= 0:
             return self._reject_tracked("negative_kelly", "Negative Kelly, no edge")
 
-        # Reduce size on WARNING
-        if cb_status == "WARNING":
-            size *= 0.5
-
-        # Calculate stop-loss
-        entry = decision.entry_price or 0.0
+        # Calculate stop-loss — use explicit entry_price if provided
+        entry = entry_price if entry_price is not None else (decision.entry_price or 0.0)
         if entry <= 0:
-            # Estimate entry from latest data (caller should provide)
-            entry = 42000.0  # Placeholder, will be set by caller
+            logger.warning("RISK: no entry_price available — stop-loss unreliable")
+            return self._reject_tracked("no_entry_price", "No entry price available")
 
         stop = calculate_stop_loss(
             entry_price=entry,
@@ -113,10 +110,30 @@ class RiskManager:
             timeframe=timeframe,
         )
 
+        # Position sizing: ATR risk budget (stop distance determines size).
+        # Wider stops → fewer shares, same dollar risk per trade.
+        stop_distance = abs(entry - stop)
+        if stop_distance > 0 and entry > 0:
+            risk_budget = self._portfolio_value * self._max_risk_pct
+            shares = risk_budget / stop_distance
+            size = shares * entry
+        else:
+            size = kelly_size
+
+        # Caps: never more than 10% of portfolio in one position
+        size = min(size, self._portfolio_value * 0.10)
+
+        # Reduce size on WARNING
+        if cb_status == "WARNING":
+            size *= 0.5
+
+        if size <= 0:
+            return self._reject_tracked("zero_position", "Position size zero after caps")
+
         self._debug_approved += 1
         logger.debug(
-            "RISK [%s] APPROVED: size=$%.2f stop=%.2f conf=%.3f",
-            decision.symbol, size, stop, decision.confidence,
+            "RISK [%s] APPROVED: size=$%.2f stop=%.2f conf=%.3f tf=%s",
+            decision.symbol, size, stop, decision.confidence, timeframe,
         )
         return RiskVerdict.approve(position_size=size, stop_loss=stop)
 

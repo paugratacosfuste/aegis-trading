@@ -24,6 +24,23 @@ logger = logging.getLogger(__name__)
 
 MIN_LOOKBACK = 21  # Agents need at least 21 candles
 
+# Timeframe-aware parameters for exit management.
+# All bar counts calibrated relative to holding period:
+#   time_exit_bars: max bars before forced exit (~3 days for 1h, ~3 weeks for 1d)
+#   cooldown_bars: bars after exit before re-entry on same symbol
+#   regime_interval: bars between regime re-detection
+#   sharpe_periods: annualization factor for Sharpe ratio
+_TIMEFRAME_PARAMS: dict[str, dict[str, int]] = {
+    "1m":  {"time_exit_bars": 1440, "cooldown_bars": 60,  "regime_interval": 1440, "sharpe_periods": 525600},
+    "5m":  {"time_exit_bars": 576,  "cooldown_bars": 48,  "regime_interval": 288,  "sharpe_periods": 105120},
+    "15m": {"time_exit_bars": 288,  "cooldown_bars": 24,  "regime_interval": 96,   "sharpe_periods": 35040},
+    "1h":  {"time_exit_bars": 72,   "cooldown_bars": 24,  "regime_interval": 24,   "sharpe_periods": 8760},
+    "4h":  {"time_exit_bars": 30,   "cooldown_bars": 6,   "regime_interval": 6,    "sharpe_periods": 2190},
+    "1d":  {"time_exit_bars": 20,   "cooldown_bars": 5,   "regime_interval": 1,    "sharpe_periods": 252},
+}
+
+_DEFAULT_TF_PARAMS = {"time_exit_bars": 72, "cooldown_bars": 24, "regime_interval": 24, "sharpe_periods": 8760}
+
 
 class BacktestEngine:
     def __init__(
@@ -35,6 +52,7 @@ class BacktestEngine:
         max_risk_pct: float = 0.05,
         agents: list[BaseAgent] | None = None,
         shadow_hook=None,
+        macro_provider=None,
     ):
         self.initial_capital = initial_capital
         self.equity = initial_capital
@@ -49,6 +67,7 @@ class BacktestEngine:
         )
         self._regime_detector = PriceRegimeDetector()
         self._shadow_hook = shadow_hook
+        self._macro_provider = macro_provider
 
         self._positions: list[dict] = []
         self._closed_trades: list[dict] = []
@@ -67,7 +86,9 @@ class BacktestEngine:
 
         # Per-symbol cooldown: bar index of last exit
         self._cooldown: dict[str, int] = {}
-        self._cooldown_bars = 24  # 24 bars = 1 day on 1h
+        # Timeframe-dependent params (set in run/run_multi from candle data)
+        self._timeframe = "1h"
+        self._tf_params = _DEFAULT_TF_PARAMS.copy()
 
     # HMM regime -> stop-loss volatility regime mapping
     _REGIME_TO_VOLATILITY: dict[str, str] = {
@@ -87,6 +108,11 @@ class BacktestEngine:
 
         if len(candles) < MIN_LOOKBACK:
             return self._build_results()
+
+        # Detect timeframe from candle data
+        self._timeframe = candles[0].timeframe
+        self._tf_params = _TIMEFRAME_PARAMS.get(self._timeframe, _DEFAULT_TF_PARAMS)
+        logger.info("Backtest timeframe=%s params=%s", self._timeframe, self._tf_params)
 
         # Reset debug counters
         self._debug_total_cycles = 0
@@ -111,7 +137,7 @@ class BacktestEngine:
         self._debug_regime_counts: dict[str, int] = {}
 
         regime = "normal"
-        _REGIME_INTERVAL = 24  # Re-detect every 24 bars
+        _REGIME_INTERVAL = self._tf_params["regime_interval"]
         _REGIME_CAP = 2000
         _AGENT_CAP = 200  # Agents only need last ~120 candles max
 
@@ -120,12 +146,16 @@ class BacktestEngine:
             current_price = window[-1].close
             symbol = window[-1].symbol
 
+            # Advance macro provider to current bar timestamp
+            if self._macro_provider and hasattr(self._macro_provider, "advance_to"):
+                self._macro_provider.advance_to(window[-1].timestamp)
+
             # Check exits on open positions (trailing stop, take-profit, stop-loss, time)
             atr = self._compute_atr(window[-14:]) if len(window) >= 14 else self._compute_atr(window)
             self._check_exits(current_price, i, atr_14=atr)
 
             # Detect regime periodically
-            if (i - MIN_LOOKBACK) % _REGIME_INTERVAL == 0:
+            if (i - MIN_LOOKBACK) % max(_REGIME_INTERVAL, 1) == 0:
                 regime_window = candles[max(0, i + 1 - _REGIME_CAP) : i + 1]
                 regime = self._regime_detector.predict(regime_window)
             self._debug_regime_counts[regime] = self._debug_regime_counts.get(regime, 0) + 1
@@ -135,7 +165,7 @@ class BacktestEngine:
 
             # Cooldown: skip symbol if recently exited
             last_exit = self._cooldown.get(symbol, -9999)
-            if i - last_exit < self._cooldown_bars:
+            if i - last_exit < self._tf_params["cooldown_bars"]:
                 self._debug_no_trade += 1
                 self._debug_rejection_reasons["cooldown"] = (
                     self._debug_rejection_reasons.get("cooldown", 0) + 1
@@ -208,6 +238,8 @@ class BacktestEngine:
             verdict = self._risk_manager.evaluate(
                 decision, open_pos_objects, atr_14=atr,
                 volatility_regime=vol_regime,
+                timeframe=self._timeframe,
+                entry_price=current_price,
             )
 
             if not verdict.approved:
@@ -270,6 +302,16 @@ class BacktestEngine:
         self._closed_trades = []
         self._equity_curve = [self.initial_capital]
 
+        # Filter out empty candle lists and detect timeframe
+        candles_by_symbol = {s: c for s, c in candles_by_symbol.items() if c}
+        if not candles_by_symbol:
+            logger.warning("run_multi: all symbol candle lists are empty")
+            return self._build_results()
+        first_candles = next(iter(candles_by_symbol.values()))
+        self._timeframe = first_candles[0].timeframe
+        self._tf_params = _TIMEFRAME_PARAMS.get(self._timeframe, _DEFAULT_TF_PARAMS)
+        logger.info("Multi-symbol backtest timeframe=%s params=%s", self._timeframe, self._tf_params)
+
         # Reset debug counters
         self._debug_total_cycles = 0
         self._debug_no_signals = 0
@@ -300,13 +342,17 @@ class BacktestEngine:
         logger.info("Multi-symbol backtest: %d symbols, %d bars each", len(candles_by_symbol), min_len)
 
         regime = "normal"
-        _REGIME_UPDATE_INTERVAL = 24  # Re-detect regime every 24 bars (daily for 1h)
+        _REGIME_UPDATE_INTERVAL = self._tf_params["regime_interval"]
         _REGIME_WINDOW_CAP = 2000
         _AGENT_WINDOW_CAP = 200  # Agents only need last ~120 candles max
 
         for i in range(MIN_LOOKBACK, min_len):
+            # Advance macro provider to current bar timestamp
+            if self._macro_provider and hasattr(self._macro_provider, "advance_to"):
+                self._macro_provider.advance_to(primary_candles[i].timestamp)
+
             # Detect regime periodically from primary symbol
-            if (i - MIN_LOOKBACK) % _REGIME_UPDATE_INTERVAL == 0:
+            if (i - MIN_LOOKBACK) % max(_REGIME_UPDATE_INTERVAL, 1) == 0:
                 regime_window = primary_candles[max(0, i + 1 - _REGIME_WINDOW_CAP) : i + 1]
                 regime = self._regime_detector.predict(regime_window)
             self._debug_regime_counts[regime] = self._debug_regime_counts.get(regime, 0) + 1
@@ -331,7 +377,7 @@ class BacktestEngine:
 
                 # Cooldown: skip symbol if recently exited
                 last_exit = self._cooldown.get(symbol, -9999)
-                if i - last_exit < self._cooldown_bars:
+                if i - last_exit < self._tf_params["cooldown_bars"]:
                     self._debug_no_trade += 1
                     self._debug_rejection_reasons["cooldown"] = (
                         self._debug_rejection_reasons.get("cooldown", 0) + 1
@@ -339,10 +385,9 @@ class BacktestEngine:
                     continue
 
                 signals = []
-                _NON_VOTING = {"fundamental", "macro"}
                 for agent in self._agents:
                     sig = agent.generate_signal(symbol, window)
-                    if abs(sig.direction) > 0.01 or sig.agent_type in _NON_VOTING:
+                    if abs(sig.direction) > 0.01 or sig.agent_type in NON_VOTING_TYPES:
                         signals.append(sig)
 
                 if not signals:
@@ -405,6 +450,8 @@ class BacktestEngine:
                 verdict = self._risk_manager.evaluate(
                     decision, open_pos_objects, atr_14=atr,
                     volatility_regime=vol_regime,
+                    timeframe=self._timeframe,
+                    entry_price=current_price,
                 )
 
                 if not verdict.approved:
@@ -496,8 +543,6 @@ class BacktestEngine:
                 remaining.append(pos)
         self._positions = remaining
 
-    # -- Exit evaluation constants --
-    _TIME_EXIT_BARS = 72  # 1.5x expected holding (~48h for 1h bars)
     _TIME_EXIT_R_THRESHOLD = 0.5
 
     def _evaluate_exit(self, pos: dict, current_price: float, index: int, atr_14: float) -> str | None:
@@ -522,7 +567,7 @@ class BacktestEngine:
         if r_multiple >= 1.5 and not pos.get("partial_taken", False):
             return "take_profit_partial"
 
-        # 3. Trailing stop update + check
+        # 3. Trailing stop update + check (timeframe-aware trail width)
         unrealized_pnl_pct = pnl_per_unit / entry if entry > 0 else 0.0
         old_stop = pos["stop_loss"]
         new_stop = update_trailing_stop(
@@ -531,6 +576,7 @@ class BacktestEngine:
             direction=direction,
             atr_14=atr_14,
             unrealized_pnl_pct=unrealized_pnl_pct,
+            timeframe=self._timeframe,
         )
         pos["stop_loss"] = new_stop  # Tighten in-place (mutable dict)
 
@@ -553,9 +599,11 @@ class BacktestEngine:
                 return "trailing_stop"
             return "stop_loss"
 
-        # 4. Time-based exit
+        # 4. Time-based exit (scaled by timeframe: 72 bars for 1h, 20 bars for 1d)
+        #    Asymmetric: only exit losing positions. Winners ride to trailing stop.
         bars_held = index - pos["entry_index"]
-        if bars_held > self._TIME_EXIT_BARS and abs(r_multiple) < self._TIME_EXIT_R_THRESHOLD:
+        time_exit_bars = self._tf_params["time_exit_bars"]
+        if bars_held > time_exit_bars and r_multiple < 0:
             return "time_exit"
 
         return None
@@ -675,7 +723,7 @@ class BacktestEngine:
             "equity_curve": self._equity_curve,
             "trades": self._closed_trades,
             "metrics": {
-                "sharpe": calculate_sharpe(returns, periods_per_year=365 * 24),
+                "sharpe": calculate_sharpe(returns, periods_per_year=self._tf_params["sharpe_periods"]),
                 "max_drawdown": calculate_max_drawdown(self._equity_curve),
                 "win_rate": calculate_win_rate(pnls),
                 "profit_factor": calculate_profit_factor(pnls),

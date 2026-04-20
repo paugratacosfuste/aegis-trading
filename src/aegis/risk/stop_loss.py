@@ -16,7 +16,18 @@ TIMEFRAME_ADJUSTMENTS = {
     "15m": 0.7,
     "1h": 1.0,
     "4h": 1.3,
-    "1d": 1.8,
+    "1d": 1.4,
+}
+
+# Trailing stop ATR multiplier per timeframe.
+# Longer timeframes need looser trails to avoid whipsaw on swing trades.
+TRAILING_ATR_MULTIPLIERS = {
+    "1m": 1.5,
+    "5m": 1.5,
+    "15m": 1.5,
+    "1h": 1.5,
+    "4h": 1.8,
+    "1d": 2.0,
 }
 
 
@@ -48,19 +59,30 @@ def update_trailing_stop(
     direction: str,
     atr_14: float,
     unrealized_pnl_pct: float,
+    timeframe: str = "1h",
 ) -> float:
     """Trailing stop: tightens as profit grows.
 
     Only activates once >1% profitable. Never loosens the stop.
-    Trail distance = 1.5 * ATR.
+    Trail distance scales with timeframe. Tightens further at higher profit levels:
+      - Base trail: timeframe-dependent ATR multiplier
+      - At >5% profit: trail tightens to 1.0x ATR (lock in gains)
     """
+    trail_mult = TRAILING_ATR_MULTIPLIERS.get(timeframe, 1.5)
+
+    # Tighten trail at higher profit levels to lock in gains
+    if unrealized_pnl_pct >= 0.05:
+        trail_mult = min(trail_mult, 1.0)
+    elif unrealized_pnl_pct >= 0.03:
+        trail_mult = min(trail_mult, 1.2)
+
     if direction == "LONG" and unrealized_pnl_pct > 0.01:
-        trail_distance = atr_14 * 1.5
+        trail_distance = atr_14 * trail_mult
         new_stop = current_price - trail_distance
         return max(new_stop, current_stop)
 
     if direction == "SHORT" and unrealized_pnl_pct > 0.01:
-        trail_distance = atr_14 * 1.5
+        trail_distance = atr_14 * trail_mult
         new_stop = current_price + trail_distance
         return min(new_stop, current_stop)
 

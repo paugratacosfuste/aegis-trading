@@ -6,6 +6,7 @@ In backtest, use NullMacroProvider (returns None -> agents emit neutral).
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Protocol
 
 from aegis.common.types import MacroDataPoint
@@ -59,3 +60,41 @@ class HistoricalMacroProvider:
 
     def get_vix_history(self, lookback_days: int = 30) -> list[float] | None:
         return self._vix_history
+
+
+class BacktestMacroProvider:
+    """Time-series macro provider for backtest. Advances with the bar clock.
+
+    Call advance_to(timestamp) each bar so get_macro_snapshot() returns
+    the most recent data as of that timestamp (no look-ahead).
+    """
+
+    def __init__(self, snapshots: list[MacroDataPoint]):
+        self._snapshots = sorted(snapshots, key=lambda s: s.timestamp)
+        self._current_idx = 0
+
+    def advance_to(self, timestamp: datetime) -> None:
+        """Advance to the latest snapshot on or before timestamp."""
+        while (
+            self._current_idx < len(self._snapshots) - 1
+            and self._snapshots[self._current_idx + 1].timestamp <= timestamp
+        ):
+            self._current_idx += 1
+
+    def get_macro_snapshot(self) -> MacroDataPoint | None:
+        if not self._snapshots:
+            return None
+        return self._snapshots[self._current_idx]
+
+    def get_yield_curve(self) -> dict[str, float] | None:
+        snap = self.get_macro_snapshot()
+        if snap is None:
+            return None
+        return {"10Y": snap.yield_10y, "2Y": snap.yield_2y}
+
+    def get_vix_history(self, lookback_days: int = 30) -> list[float] | None:
+        if not self._snapshots:
+            return None
+        end = self._current_idx + 1
+        start = max(0, end - lookback_days)
+        return [s.vix for s in self._snapshots[start:end]]

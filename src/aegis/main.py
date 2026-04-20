@@ -69,10 +69,25 @@ def run_backtest(config_path: str) -> None:
         logger.info("Downloaded %d candles for %s", len(candles), sym)
         candles_by_symbol[sym] = candles
 
-    # Use config-driven agents if defined, else Phase 1 defaults
+    # Download macro data if macro agents are enabled
     enabled_types = config.ensemble.get("enabled_types")
+    macro_provider = None
+    if enabled_types is None or "macro" in enabled_types:
+        from aegis.agents.macro.providers import BacktestMacroProvider
+        from aegis.data.macro_data_loader import download_macro_data
+
+        logger.info("Downloading macro data for %s to %s...", start, end)
+        macro_snapshots = download_macro_data(start=start, end=end)
+        if macro_snapshots:
+            macro_provider = BacktestMacroProvider(macro_snapshots)
+            logger.info("Macro provider loaded with %d snapshots", len(macro_snapshots))
+
+    # Use config-driven agents if defined, else Phase 1 defaults
     agents = (
-        create_agents_from_config(config.agents, enabled_types=enabled_types)
+        create_agents_from_config(
+            config.agents, enabled_types=enabled_types,
+            macro_provider=macro_provider,
+        )
         if config.agents
         else create_default_agents()
     )
@@ -85,6 +100,7 @@ def run_backtest(config_path: str) -> None:
         max_open_positions=config.max_open_positions,
         max_risk_pct=config.max_risk_per_trade,
         agents=agents,
+        macro_provider=macro_provider,
     )
 
     if len(candles_by_symbol) == 1:

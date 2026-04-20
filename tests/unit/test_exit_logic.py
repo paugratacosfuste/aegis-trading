@@ -18,10 +18,10 @@ class TestUpdateTrailingStop:
             current_price=42000.0,
             direction="LONG",
             atr_14=500.0,
-            unrealized_pnl_pct=0.05,  # 5% profit
+            unrealized_pnl_pct=0.05,  # 5% profit → ratchet to 1.0x ATR
         )
-        # Trail = 42000 - 500*1.5 = 41250, should tighten from 39000
-        assert new_stop == 41250.0
+        # Trail = 42000 - 500*1.0 = 41500 (ratcheted at 5% profit)
+        assert new_stop == 41500.0
 
     def test_long_never_loosens(self):
         """Trailing stop cannot move below current stop for LONG."""
@@ -53,10 +53,10 @@ class TestUpdateTrailingStop:
             current_price=42000.0,
             direction="SHORT",
             atr_14=500.0,
-            unrealized_pnl_pct=0.05,
+            unrealized_pnl_pct=0.05,  # 5% profit → ratchet to 1.0x ATR
         )
-        # Trail = 42000 + 750 = 42750, should tighten from 45000
-        assert new_stop == 42750.0
+        # Trail = 42000 + 500*1.0 = 42500 (ratcheted at 5% profit)
+        assert new_stop == 42500.0
 
     def test_short_never_loosens(self):
         """Trailing stop cannot move above current stop for SHORT."""
@@ -194,8 +194,8 @@ class TestBacktestExitIntegration:
         assert len(engine._positions) == 0
         assert engine._closed_trades[0]["exit_reason"] == "trailing_stop"
 
-    def test_time_based_exit_when_flat(self):
-        """Position exits when held >72 bars and |R| < 0.5."""
+    def test_time_based_exit_when_losing(self):
+        """Position exits when held >72 bars and at a loss (R < 0)."""
         from aegis.backtest.engine import BacktestEngine
 
         engine = BacktestEngine(initial_capital=10000.0)
@@ -204,13 +204,13 @@ class TestBacktestExitIntegration:
             direction="LONG", entry_price=40000.0, stop_loss=39000.0, entry_index=0,
         )
         engine._positions = [pos]
-        # At index 80 (>72 bars), price near entry → |R| ≈ 0.3 < 0.5
-        engine._check_exits(40300.0, 80, atr_14=500.0)
+        # At index 80 (>72 bars), price below entry → R = -0.3 < 0
+        engine._check_exits(39700.0, 80, atr_14=500.0)
         assert len(engine._positions) == 0
         assert engine._closed_trades[0]["exit_reason"] == "time_exit"
 
-    def test_no_time_exit_if_profitable(self):
-        """Don't time-exit if position has significant R-multiple."""
+    def test_no_time_exit_if_winning(self):
+        """Don't time-exit if position is profitable — let trailing stop manage."""
         from aegis.backtest.engine import BacktestEngine
 
         engine = BacktestEngine(initial_capital=10000.0)
@@ -218,9 +218,9 @@ class TestBacktestExitIntegration:
             direction="LONG", entry_price=40000.0, stop_loss=39000.0, entry_index=0,
         )
         engine._positions = [pos]
-        # At index 80 (>72 bars), but price at 40800 → R = 0.8 > 0.5
-        engine._check_exits(40800.0, 80, atr_14=500.0)
-        assert len(engine._positions) == 1  # Still open
+        # At index 80 (>72 bars), price at 40300 → R = +0.3 (small winner)
+        engine._check_exits(40300.0, 80, atr_14=500.0)
+        assert len(engine._positions) == 1  # Still open, rides to trailing stop
 
     def test_short_take_profit(self):
         """SHORT position closes at 3R below entry."""
