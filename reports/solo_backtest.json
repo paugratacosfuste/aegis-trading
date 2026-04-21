@@ -1,0 +1,1079 @@
+{
+  "window": {
+    "start": "2021-01-01",
+    "end": "2025-12-31",
+    "interval": "1d"
+  },
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "BNBUSDT",
+    "XRPUSDT"
+  ],
+  "initial_capital": 10000.0,
+  "fixed_risk_pct": 0.1,
+  "confidence_threshold": 0.5,
+  "edge_filter": {
+    "rule": "OOS Sharpe > 0.3 in >=2 years AND overall mean Sharpe > 0",
+    "survivor_count": 20,
+    "deadlist_count": 17
+  },
+  "survivors": [
+    {
+      "agent_id": "tech_09",
+      "agent_type": "technical",
+      "strategy": "indicator",
+      "params": {
+        "preset": "full_suite",
+        "period_style": "mixed"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 21290.92,
+      "total_return_pct": 112.91,
+      "trade_count": 279,
+      "per_year_sharpe": {
+        "2021": 1.494,
+        "2022": -0.429,
+        "2023": 1.176,
+        "2024": 0.446,
+        "2025": 0.432
+      },
+      "per_year_return": {
+        "2021": 59.61,
+        "2022": -9.45,
+        "2023": 23.16,
+        "2024": 6.25,
+        "2025": 7.38
+      },
+      "max_drawdown_pct": -29.94,
+      "overall_sharpe": 0.624
+    },
+    {
+      "agent_id": "stat_08",
+      "agent_type": "statistical",
+      "strategy": "multi_window",
+      "params": {
+        "windows": [
+          20,
+          50,
+          100
+        ]
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 15381.67,
+      "total_return_pct": 53.82,
+      "trade_count": 358,
+      "per_year_sharpe": {
+        "2021": 0.851,
+        "2022": -0.716,
+        "2023": 0.834,
+        "2024": 0.45,
+        "2025": 1.006
+      },
+      "per_year_return": {
+        "2021": 24.52,
+        "2022": -18.89,
+        "2023": 16.47,
+        "2024": 8.27,
+        "2025": 20.65
+      },
+      "max_drawdown_pct": -35.57,
+      "overall_sharpe": 0.485
+    },
+    {
+      "agent_id": "tech_04",
+      "agent_type": "technical",
+      "strategy": "indicator",
+      "params": {
+        "preset": "volume_confirmed",
+        "period_style": "slow"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 20101.83,
+      "total_return_pct": 101.02,
+      "trade_count": 291,
+      "per_year_sharpe": {
+        "2021": 1.962,
+        "2022": 0.725,
+        "2023": -0.449,
+        "2024": 0.02,
+        "2025": 0.156
+      },
+      "per_year_return": {
+        "2021": 83.79,
+        "2022": 13.13,
+        "2023": -8.22,
+        "2024": -0.75,
+        "2025": 1.74
+      },
+      "max_drawdown_pct": -28.14,
+      "overall_sharpe": 0.483
+    },
+    {
+      "agent_id": "tech_03",
+      "agent_type": "technical",
+      "strategy": "indicator",
+      "params": {
+        "preset": "volume_confirmed",
+        "period_style": "standard"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 18434.71,
+      "total_return_pct": 84.35,
+      "trade_count": 303,
+      "per_year_sharpe": {
+        "2021": 2.031,
+        "2022": -0.235,
+        "2023": 0.324,
+        "2024": 0.481,
+        "2025": -0.513
+      },
+      "per_year_return": {
+        "2021": 84.5,
+        "2022": -5.06,
+        "2023": 4.89,
+        "2024": 8.03,
+        "2025": -9.86
+      },
+      "max_drawdown_pct": -30.13,
+      "overall_sharpe": 0.418
+    },
+    {
+      "agent_id": "mom_01",
+      "agent_type": "momentum",
+      "strategy": "timeseries",
+      "params": {
+        "lookback": 5
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 16148.13,
+      "total_return_pct": 61.48,
+      "trade_count": 330,
+      "per_year_sharpe": {
+        "2021": 0.927,
+        "2022": 0.451,
+        "2023": -0.333,
+        "2024": -0.16,
+        "2025": 1.026
+      },
+      "per_year_return": {
+        "2021": 30.25,
+        "2022": 9.63,
+        "2023": -5.56,
+        "2024": -3.93,
+        "2025": 16.65
+      },
+      "max_drawdown_pct": -41.55,
+      "overall_sharpe": 0.382
+    },
+    {
+      "agent_id": "mom_04",
+      "agent_type": "momentum",
+      "strategy": "timeseries",
+      "params": {
+        "lookback": 60
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 15883.96,
+      "total_return_pct": 58.84,
+      "trade_count": 316,
+      "per_year_sharpe": {
+        "2021": 1.781,
+        "2022": -0.633,
+        "2023": -0.57,
+        "2024": 0.549,
+        "2025": 0.263
+      },
+      "per_year_return": {
+        "2021": 74.63,
+        "2022": -13.77,
+        "2023": -11.88,
+        "2024": 10.04,
+        "2025": 3.96
+      },
+      "max_drawdown_pct": -44.3,
+      "overall_sharpe": 0.278
+    },
+    {
+      "agent_id": "stat_02",
+      "agent_type": "statistical",
+      "strategy": "zscore",
+      "params": {
+        "lookback": 50
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 10613.98,
+      "total_return_pct": 6.14,
+      "trade_count": 307,
+      "per_year_sharpe": {
+        "2021": -0.153,
+        "2022": -1.134,
+        "2023": 0.643,
+        "2024": 0.741,
+        "2025": 0.666
+      },
+      "per_year_return": {
+        "2021": -6.6,
+        "2022": -22.5,
+        "2023": 10.94,
+        "2024": 17.56,
+        "2025": 12.34
+      },
+      "max_drawdown_pct": -37.1,
+      "overall_sharpe": 0.153
+    },
+    {
+      "agent_id": "mom_02",
+      "agent_type": "momentum",
+      "strategy": "timeseries",
+      "params": {
+        "lookback": 10
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 11475.03,
+      "total_return_pct": 14.75,
+      "trade_count": 324,
+      "per_year_sharpe": {
+        "2021": 0.569,
+        "2022": 0.683,
+        "2023": -0.671,
+        "2024": -1.006,
+        "2025": 0.893
+      },
+      "per_year_return": {
+        "2021": 16.19,
+        "2022": 16.51,
+        "2023": -12.4,
+        "2024": -19.71,
+        "2025": 15.99
+      },
+      "max_drawdown_pct": -52.02,
+      "overall_sharpe": 0.094
+    },
+    {
+      "agent_id": "crypto_05",
+      "agent_type": "crypto",
+      "strategy": "crypto_technical",
+      "params": {
+        "preset": "full_suite",
+        "period_style": "mixed"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 14004.6,
+      "total_return_pct": 40.05,
+      "trade_count": 120,
+      "per_year_sharpe": {
+        "2021": 1.514,
+        "2022": 0.061,
+        "2023": 0.382,
+        "2024": -1.56,
+        "2025": 0.059
+      },
+      "per_year_return": {
+        "2021": 55.37,
+        "2022": 0.2,
+        "2023": 2.81,
+        "2024": -12.68,
+        "2025": 0.25
+      },
+      "max_drawdown_pct": -27.18,
+      "overall_sharpe": 0.091
+    },
+    {
+      "agent_id": "crypto_04",
+      "agent_type": "crypto",
+      "strategy": "crypto_technical",
+      "params": {
+        "preset": "volume_confirmed",
+        "period_style": "standard"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 13635.48,
+      "total_return_pct": 36.35,
+      "trade_count": 121,
+      "per_year_sharpe": {
+        "2021": 1.437,
+        "2022": 0.061,
+        "2023": 0.382,
+        "2024": -1.56,
+        "2025": 0.059
+      },
+      "per_year_return": {
+        "2021": 51.27,
+        "2022": 0.2,
+        "2023": 2.81,
+        "2024": -12.68,
+        "2025": 0.25
+      },
+      "max_drawdown_pct": -27.18,
+      "overall_sharpe": 0.076
+    },
+    {
+      "agent_id": "stat_06",
+      "agent_type": "statistical",
+      "strategy": "bollinger_zscore",
+      "params": {
+        "period": 20
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 8698.47,
+      "total_return_pct": -13.02,
+      "trade_count": 373,
+      "per_year_sharpe": {
+        "2021": -0.315,
+        "2022": -0.868,
+        "2023": 0.545,
+        "2024": 0.265,
+        "2025": 0.692
+      },
+      "per_year_return": {
+        "2021": -14.7,
+        "2022": -22.5,
+        "2023": 10.07,
+        "2024": 4.12,
+        "2025": 13.66
+      },
+      "max_drawdown_pct": -45.86,
+      "overall_sharpe": 0.064
+    },
+    {
+      "agent_id": "tech_07",
+      "agent_type": "technical",
+      "strategy": "indicator",
+      "params": {
+        "preset": "mean_reversion",
+        "period_style": "standard"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 8285.22,
+      "total_return_pct": -17.15,
+      "trade_count": 386,
+      "per_year_sharpe": {
+        "2021": -0.67,
+        "2022": -0.508,
+        "2023": 0.414,
+        "2024": 0.334,
+        "2025": 0.71
+      },
+      "per_year_return": {
+        "2021": -25.61,
+        "2022": -14.83,
+        "2023": 6.98,
+        "2024": 5.74,
+        "2025": 14.44
+      },
+      "max_drawdown_pct": -47.86,
+      "overall_sharpe": 0.056
+    },
+    {
+      "agent_id": "mom_07",
+      "agent_type": "momentum",
+      "strategy": "volume_weighted",
+      "params": {
+        "lookback": 20
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 12559.57,
+      "total_return_pct": 25.6,
+      "trade_count": 346,
+      "per_year_sharpe": {
+        "2021": 1.222,
+        "2022": 0.893,
+        "2023": -0.217,
+        "2024": -0.376,
+        "2025": -1.342
+      },
+      "per_year_return": {
+        "2021": 51.43,
+        "2022": 18.7,
+        "2023": -4.69,
+        "2024": -8.34,
+        "2025": -24.0
+      },
+      "max_drawdown_pct": -52.14,
+      "overall_sharpe": 0.036
+    },
+    {
+      "agent_id": "tech_06",
+      "agent_type": "technical",
+      "strategy": "indicator",
+      "params": {
+        "preset": "trend_following",
+        "period_style": "standard"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 13173.06,
+      "total_return_pct": 31.73,
+      "trade_count": 306,
+      "per_year_sharpe": {
+        "2021": 1.821,
+        "2022": 0.853,
+        "2023": -0.984,
+        "2024": -0.99,
+        "2025": -0.558
+      },
+      "per_year_return": {
+        "2021": 79.0,
+        "2022": 16.07,
+        "2023": -16.35,
+        "2024": -17.78,
+        "2025": -11.54
+      },
+      "max_drawdown_pct": -44.32,
+      "overall_sharpe": 0.028
+    },
+    {
+      "agent_id": "stat_05",
+      "agent_type": "statistical",
+      "strategy": "kalman",
+      "params": {
+        "process_noise": 0.01,
+        "measurement_noise": 1.0
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 8146.42,
+      "total_return_pct": -18.54,
+      "trade_count": 384,
+      "per_year_sharpe": {
+        "2021": -0.558,
+        "2022": -0.508,
+        "2023": 0.414,
+        "2024": 0.334,
+        "2025": 0.457
+      },
+      "per_year_return": {
+        "2021": -23.05,
+        "2022": -14.83,
+        "2023": 6.98,
+        "2024": 5.74,
+        "2025": 8.73
+      },
+      "max_drawdown_pct": -46.07,
+      "overall_sharpe": 0.028
+    },
+    {
+      "agent_id": "mom_03",
+      "agent_type": "momentum",
+      "strategy": "timeseries",
+      "params": {
+        "lookback": 20
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 12429.77,
+      "total_return_pct": 24.3,
+      "trade_count": 349,
+      "per_year_sharpe": {
+        "2021": 1.253,
+        "2022": 0.879,
+        "2023": -0.949,
+        "2024": -1.126,
+        "2025": 0.031
+      },
+      "per_year_return": {
+        "2021": 53.48,
+        "2022": 20.73,
+        "2023": -16.63,
+        "2024": -22.39,
+        "2025": -0.44
+      },
+      "max_drawdown_pct": -53.69,
+      "overall_sharpe": 0.018
+    },
+    {
+      "agent_id": "mom_06",
+      "agent_type": "momentum",
+      "strategy": "dual",
+      "params": {
+        "lookback": 20,
+        "benchmark_lookback": 60
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 12429.77,
+      "total_return_pct": 24.3,
+      "trade_count": 349,
+      "per_year_sharpe": {
+        "2021": 1.253,
+        "2022": 0.879,
+        "2023": -0.949,
+        "2024": -1.126,
+        "2025": 0.031
+      },
+      "per_year_return": {
+        "2021": 53.48,
+        "2022": 20.73,
+        "2023": -16.63,
+        "2024": -22.39,
+        "2025": -0.44
+      },
+      "max_drawdown_pct": -53.69,
+      "overall_sharpe": 0.018
+    },
+    {
+      "agent_id": "tech_08",
+      "agent_type": "technical",
+      "strategy": "indicator",
+      "params": {
+        "preset": "mean_reversion",
+        "period_style": "slow"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 7619.48,
+      "total_return_pct": -23.81,
+      "trade_count": 386,
+      "per_year_sharpe": {
+        "2021": -0.893,
+        "2022": -0.508,
+        "2023": 0.414,
+        "2024": 0.367,
+        "2025": 0.706
+      },
+      "per_year_return": {
+        "2021": -32.0,
+        "2022": -14.83,
+        "2023": 6.98,
+        "2024": 6.47,
+        "2025": 14.35
+      },
+      "max_drawdown_pct": -52.34,
+      "overall_sharpe": 0.017
+    },
+    {
+      "agent_id": "tech_01",
+      "agent_type": "technical",
+      "strategy": "indicator",
+      "params": {
+        "preset": "momentum_fast",
+        "period_style": "fast"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 8109.34,
+      "total_return_pct": -18.91,
+      "trade_count": 375,
+      "per_year_sharpe": {
+        "2021": -0.459,
+        "2022": -0.561,
+        "2023": 0.308,
+        "2024": 0.333,
+        "2025": 0.453
+      },
+      "per_year_return": {
+        "2021": -20.49,
+        "2022": -16.22,
+        "2023": 4.92,
+        "2024": 5.68,
+        "2025": 8.64
+      },
+      "max_drawdown_pct": -42.77,
+      "overall_sharpe": 0.015
+    },
+    {
+      "agent_id": "tech_05",
+      "agent_type": "technical",
+      "strategy": "indicator",
+      "params": {
+        "preset": "trend_following",
+        "period_style": "fast"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 11035.66,
+      "total_return_pct": 10.36,
+      "trade_count": 328,
+      "per_year_sharpe": {
+        "2021": 0.77,
+        "2022": 0.658,
+        "2023": -0.776,
+        "2024": -0.59,
+        "2025": -0.052
+      },
+      "per_year_return": {
+        "2021": 23.17,
+        "2022": 15.71,
+        "2023": -13.73,
+        "2024": -12.17,
+        "2025": -1.88
+      },
+      "max_drawdown_pct": -47.33,
+      "overall_sharpe": 0.002
+    }
+  ],
+  "deadlist": [
+    {
+      "agent_id": "tech_10",
+      "agent_type": "technical",
+      "strategy": "indicator",
+      "params": {
+        "preset": "multi_confirmation",
+        "period_style": "standard"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 13412.26,
+      "total_return_pct": 34.12,
+      "trade_count": 333,
+      "per_year_sharpe": {
+        "2021": 1.35,
+        "2022": 0.065,
+        "2023": -0.384,
+        "2024": -0.779,
+        "2025": 0.297
+      },
+      "per_year_return": {
+        "2021": 53.79,
+        "2022": -0.54,
+        "2023": -7.38,
+        "2024": -14.25,
+        "2025": 4.53
+      },
+      "max_drawdown_pct": -44.93,
+      "overall_sharpe": 0.11
+    },
+    {
+      "agent_id": "tech_02",
+      "agent_type": "technical",
+      "strategy": "indicator",
+      "params": {
+        "preset": "momentum_fast",
+        "period_style": "standard"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 9315.05,
+      "total_return_pct": -6.85,
+      "trade_count": 331,
+      "per_year_sharpe": {
+        "2021": -0.397,
+        "2022": -0.409,
+        "2023": -0.016,
+        "2024": 0.151,
+        "2025": 0.954
+      },
+      "per_year_return": {
+        "2021": -17.65,
+        "2022": -10.69,
+        "2023": -1.45,
+        "2024": 1.63,
+        "2025": 20.51
+      },
+      "max_drawdown_pct": -41.54,
+      "overall_sharpe": 0.057
+    },
+    {
+      "agent_id": "tech_11",
+      "agent_type": "technical",
+      "strategy": "asian_range",
+      "params": {
+        "market": "crypto"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 10000.0,
+      "total_return_pct": 0.0,
+      "trade_count": 0,
+      "per_year_sharpe": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "per_year_return": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "max_drawdown_pct": 0.0,
+      "overall_sharpe": 0.0
+    },
+    {
+      "agent_id": "tech_12",
+      "agent_type": "technical",
+      "strategy": "asian_range",
+      "params": {
+        "market": "forex"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 10000.0,
+      "total_return_pct": 0.0,
+      "trade_count": 0,
+      "per_year_sharpe": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "per_year_return": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "max_drawdown_pct": 0.0,
+      "overall_sharpe": 0.0
+    },
+    {
+      "agent_id": "stat_09",
+      "agent_type": "statistical",
+      "strategy": "sector_relative",
+      "params": {},
+      "initial_capital": 10000.0,
+      "final_equity": 10000.0,
+      "total_return_pct": 0.0,
+      "trade_count": 0,
+      "per_year_sharpe": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "per_year_return": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "max_drawdown_pct": 0.0,
+      "overall_sharpe": 0.0
+    },
+    {
+      "agent_id": "stat_10",
+      "agent_type": "statistical",
+      "strategy": "pairs",
+      "params": {},
+      "initial_capital": 10000.0,
+      "final_equity": 10000.0,
+      "total_return_pct": 0.0,
+      "trade_count": 0,
+      "per_year_sharpe": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "per_year_return": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "max_drawdown_pct": 0.0,
+      "overall_sharpe": 0.0
+    },
+    {
+      "agent_id": "mom_05",
+      "agent_type": "momentum",
+      "strategy": "cross_sectional",
+      "params": {},
+      "initial_capital": 10000.0,
+      "final_equity": 10000.0,
+      "total_return_pct": 0.0,
+      "trade_count": 0,
+      "per_year_sharpe": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "per_year_return": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "max_drawdown_pct": 0.0,
+      "overall_sharpe": 0.0
+    },
+    {
+      "agent_id": "crypto_01",
+      "agent_type": "crypto",
+      "strategy": "crypto_technical",
+      "params": {
+        "preset": "trend_following",
+        "period_style": "fast"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 10000.0,
+      "total_return_pct": 0.0,
+      "trade_count": 0,
+      "per_year_sharpe": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "per_year_return": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "max_drawdown_pct": 0.0,
+      "overall_sharpe": 0.0
+    },
+    {
+      "agent_id": "crypto_02",
+      "agent_type": "crypto",
+      "strategy": "crypto_technical",
+      "params": {
+        "preset": "momentum_fast",
+        "period_style": "fast"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 10000.0,
+      "total_return_pct": 0.0,
+      "trade_count": 0,
+      "per_year_sharpe": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "per_year_return": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "max_drawdown_pct": 0.0,
+      "overall_sharpe": 0.0
+    },
+    {
+      "agent_id": "crypto_03",
+      "agent_type": "crypto",
+      "strategy": "crypto_technical",
+      "params": {
+        "preset": "mean_reversion",
+        "period_style": "standard"
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 10000.0,
+      "total_return_pct": 0.0,
+      "trade_count": 0,
+      "per_year_sharpe": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "per_year_return": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      },
+      "max_drawdown_pct": 0.0,
+      "overall_sharpe": 0.0
+    },
+    {
+      "agent_id": "mom_10",
+      "agent_type": "momentum",
+      "strategy": "timeseries",
+      "params": {
+        "lookback": 120
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 9208.43,
+      "total_return_pct": -7.92,
+      "trade_count": 337,
+      "per_year_sharpe": {
+        "2021": 0.051,
+        "2022": 0.318,
+        "2023": 1.008,
+        "2024": 0.281,
+        "2025": -1.706
+      },
+      "per_year_return": {
+        "2021": -1.94,
+        "2022": 5.49,
+        "2023": 18.82,
+        "2024": 4.04,
+        "2025": -31.75
+      },
+      "max_drawdown_pct": -40.83,
+      "overall_sharpe": -0.009
+    },
+    {
+      "agent_id": "stat_01",
+      "agent_type": "statistical",
+      "strategy": "zscore",
+      "params": {
+        "lookback": 20
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 7810.48,
+      "total_return_pct": -21.9,
+      "trade_count": 378,
+      "per_year_sharpe": {
+        "2021": -0.418,
+        "2022": -0.944,
+        "2023": 0.991,
+        "2024": -0.207,
+        "2025": 0.5
+      },
+      "per_year_return": {
+        "2021": -17.69,
+        "2022": -23.87,
+        "2023": 19.73,
+        "2024": -5.08,
+        "2025": 8.58
+      },
+      "max_drawdown_pct": -46.61,
+      "overall_sharpe": -0.016
+    },
+    {
+      "agent_id": "stat_07",
+      "agent_type": "statistical",
+      "strategy": "hurst_zscore",
+      "params": {
+        "lookback": 100
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 9314.91,
+      "total_return_pct": -6.85,
+      "trade_count": 75,
+      "per_year_sharpe": {
+        "2021": 0.956,
+        "2022": -0.982,
+        "2023": 0.21,
+        "2024": -1.169,
+        "2025": 0.284
+      },
+      "per_year_return": {
+        "2021": 9.47,
+        "2022": -11.89,
+        "2023": 2.58,
+        "2024": -7.8,
+        "2025": 2.11
+      },
+      "max_drawdown_pct": -23.86,
+      "overall_sharpe": -0.14
+    },
+    {
+      "agent_id": "stat_04",
+      "agent_type": "statistical",
+      "strategy": "ornstein_uhlenbeck",
+      "params": {
+        "lookback": 60
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 10356.9,
+      "total_return_pct": 3.57,
+      "trade_count": 189,
+      "per_year_sharpe": {
+        "2021": 0.847,
+        "2022": -0.924,
+        "2023": 0.414,
+        "2024": -1.751,
+        "2025": 0.708
+      },
+      "per_year_return": {
+        "2021": 21.92,
+        "2022": -13.98,
+        "2023": 4.9,
+        "2024": -16.1,
+        "2025": 12.07
+      },
+      "max_drawdown_pct": -29.48,
+      "overall_sharpe": -0.141
+    },
+    {
+      "agent_id": "stat_03",
+      "agent_type": "statistical",
+      "strategy": "zscore",
+      "params": {
+        "lookback": 100
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 7973.24,
+      "total_return_pct": -20.27,
+      "trade_count": 253,
+      "per_year_sharpe": {
+        "2021": -0.589,
+        "2022": -0.742,
+        "2023": 0.422,
+        "2024": -0.585,
+        "2025": 0.596
+      },
+      "per_year_return": {
+        "2021": -10.71,
+        "2022": -15.93,
+        "2023": 6.51,
+        "2024": -10.62,
+        "2025": 11.35
+      },
+      "max_drawdown_pct": -35.63,
+      "overall_sharpe": -0.18
+    },
+    {
+      "agent_id": "mom_08",
+      "agent_type": "momentum",
+      "strategy": "rsi_filtered",
+      "params": {
+        "lookback": 20,
+        "rsi_threshold": 70
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 6841.77,
+      "total_return_pct": -31.58,
+      "trade_count": 286,
+      "per_year_sharpe": {
+        "2021": -0.189,
+        "2022": 0.618,
+        "2023": -1.528,
+        "2024": -1.426,
+        "2025": 0.358
+      },
+      "per_year_return": {
+        "2021": -10.56,
+        "2022": 13.54,
+        "2023": -21.72,
+        "2024": -22.12,
+        "2025": 5.01
+      },
+      "max_drawdown_pct": -69.03,
+      "overall_sharpe": -0.434
+    },
+    {
+      "agent_id": "mom_09",
+      "agent_type": "momentum",
+      "strategy": "acceleration",
+      "params": {
+        "short_lookback": 5,
+        "long_lookback": 20
+      },
+      "initial_capital": 10000.0,
+      "final_equity": 4521.71,
+      "total_return_pct": -54.78,
+      "trade_count": 374,
+      "per_year_sharpe": {
+        "2021": -1.235,
+        "2022": -0.606,
+        "2023": -0.997,
+        "2024": -0.499,
+        "2025": 0.858
+      },
+      "per_year_return": {
+        "2021": -42.06,
+        "2022": -14.11,
+        "2023": -14.73,
+        "2024": -11.13,
+        "2025": 15.83
+      },
+      "max_drawdown_pct": -64.86,
+      "overall_sharpe": -0.496
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+# Aegis 2.0 — Phase 1 survivor list
+#
+# Produced by: scripts/solo_backtest.py
+# Source report: reports/solo_backtest.json
+# Window: 2021-01-01 → 2025-12-31, 1d timeframe, 5 crypto symbols
+# Sizing: 10% fixed per signal, 2x ATR stop, 4x ATR target, 10 bps commission
+#
+# Literal plan filter (§1.3):
+#   "OOS Sharpe > 0.3 in >=2 of 5 years AND overall OOS Sharpe > 0"
+#   → 20 agents passed. Too lenient: many were bull-biased (hit +0.3 in
+#   2021 + 2023 while averaging near zero overall). Expected range 4-8.
+#
+# Strict filter applied here:
+#   - Per-year Sharpe > 0.3 in >= 3 of 5 years (regime-robust, not bull-biased)
+#   - Mean yearly Sharpe >= 0.25 (meaningful aggregate edge)
+#   - Worst single year > -1.0 (doesn't blow up in bear regime)
+#
+# → 4 direction-voting survivors.
+#
+# Thesis-layer feature providers (macro, geopolitical) are kept separately;
+# they emit regime via signal.metadata and do NOT vote directionally.
+
+agents:
+  # ─── Direction-voting survivors (Phase 1 edge filter) ──────────────────
+  technical:
+    # tech_09 — full_suite indicator, mixed timeframes.
+    # Per-year: +1.49 / -0.43 / +1.18 / +0.45 / +0.43 | mean +0.62 | ret +113%
+    # Trades=279, max DD -29.9%. Best overall edge.
+    - {id: tech_09, strategy: indicator, params: {preset: full_suite, period_style: mixed}}
+
+    # tech_03 — volume_confirmed indicator, standard periods.
+    # Per-year: +2.03 / -0.23 / +0.32 / +0.48 / -0.51 | mean +0.42 | ret +84%
+    # Trades=303, max DD -30.1%. Volume filter cuts noise.
+    - {id: tech_03, strategy: indicator, params: {preset: volume_confirmed, period_style: standard}}
+
+  statistical:
+    # stat_08 — multi_window z-score mean reversion.
+    # Per-year: +0.85 / -0.72 / +0.83 / +0.45 / +1.01 | mean +0.48 | ret +54%
+    # Trades=358, max DD -35.6%. Only Phase-1 survivor that made money in 4/5 years.
+    - {id: stat_08, strategy: multi_window, params: {windows: [20, 50, 100]}}
+
+  momentum:
+    # mom_01 — short-lookback timeseries momentum (lookback=5).
+    # Per-year: +0.93 / +0.45 / -0.33 / -0.16 / +1.03 | mean +0.38 | ret +62%
+    # Trades=330, max DD -41.5%. Catches regime turns, suffers in chop.
+    - {id: mom_01, strategy: timeseries, params: {lookback: 5}}
+
+  # ─── Thesis-layer feature providers (NOT voting in Phase 2 ensemble) ───
+  # Kept because they emit regime/risk via signal.metadata — feed the RL
+  # executor's observation in Phase 3, not the thesis voter in Phase 2.
+  macro:
+    - {id: macro_01, strategy: yield_curve_fed, params: {}}
+    - {id: macro_02, strategy: risk_regime, params: {}}
+    - {id: macro_03, strategy: economic_cycle, params: {}}
+    - {id: macro_04, strategy: inflation_regime, params: {}}
+    # macro_05 (hmm_regime) omitted — requires trained .pkl not in repo.
+  geopolitical:
+    - {id: geo_01, strategy: conflict_sanctions, params: {}}
+    - {id: geo_02, strategy: trade_policy, params: {}}
+
+# ─────────────────────────────────────────────────────────────────────────
+# Dead list: why each failed (17 marginal passes of plan-literal + 17 fails)
+# See reports/solo_backtest.json for full per-agent detail.
+#
+# MARGINAL (passed lenient filter, dropped by strict):
+#   tech_04 - bull-biased: +1.96/+0.72 in 2021/2022, dead after
+#   mom_04  - only 2 winning years; -0.63 in 2022
+#   stat_02 - zero edge 2021 (-0.15), only 3 mediocre wins
+#   mom_02  - -1.01 in 2024; volatile
+#   crypto_04/05 - big drawdown in 2024 (-1.56 Sharpe); single-year blow-up
+#   stat_06, tech_07, mom_07, tech_06, stat_05, mom_03, mom_06, tech_08,
+#   tech_01, tech_05, tech_10 - all overall < 0.12, inconsistent across regimes
+#
+# ZERO TRADES (data/strategy mismatch):
+#   tech_11/12 (asian_range)      - needs session-aware OHLCV we don't provide
+#   stat_09 (sector_relative)     - cross-asset/sector context not wired
+#   stat_10 (pairs)               - co-integration partner not configured
+#   mom_05 (cross_sectional)      - needs universe context
+#   crypto_01/02/03              - preset/strategy interaction yields no qualifying bars
+#
+# NEGATIVE OVERALL:
+#   mom_10 (-0.01), stat_01 (-0.02), stat_07 (-0.14), stat_04 (-0.14),
+#   stat_03 (-0.18), mom_08 (-0.43), mom_09 (-0.50)
+#
+# NOT SOLO-TESTED (re-evaluate via Phase 5 live shadow):
+#   sentiment 10, world_leader 1 - null provider in backtest
+#   crypto 06-10 (funding/dominance/F&G/liquidations/defi) - no historical free source
+#   fundamental 15 - equity config only
