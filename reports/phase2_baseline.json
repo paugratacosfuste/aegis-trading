@@ -1,0 +1,662 @@
+{
+  "window": {
+    "start": "2021-01-01",
+    "end": "2025-12-31",
+    "interval": "1w"
+  },
+  "symbols": [
+    "BTC/USDT",
+    "ETH/USDT",
+    "SOL/USDT",
+    "BNB/USDT",
+    "XRP/USDT"
+  ],
+  "initial_capital": 10000.0,
+  "final_equity": 18225.82,
+  "total_return_pct": 82.26,
+  "overall_sharpe": 0.266,
+  "max_drawdown_pct": -39.04,
+  "trade_count": 54,
+  "per_year_sharpe": {
+    "2021": 1.047,
+    "2022": -1.14,
+    "2023": 0.509,
+    "2024": 0.587,
+    "2025": 0.327
+  },
+  "per_year_return": {
+    "2021": 23.79,
+    "2022": -36.95,
+    "2023": 35.1,
+    "2024": 50.74,
+    "2025": 14.7
+  },
+  "exit_reason_counts": {
+    "opposing_signal": 42,
+    "target": 9,
+    "stop": 3
+  },
+  "gate": {
+    "rule": "plan \u00a72.5: overall Sharpe > 0 (else thesis has no edge)",
+    "pass": true
+  },
+  "hodl_benchmark": {
+    "total_return_pct": 1331.0,
+    "overall_sharpe": 1.042,
+    "max_drawdown_pct": -88.52,
+    "per_symbol_return_pct": {
+      "BTC/USDT": 139.92,
+      "ETH/USDT": 150.72,
+      "SOL/USDT": 3788.66,
+      "BNB/USDT": 2011.71,
+      "XRP/USDT": 563.97
+    },
+    "thesis_vs_hodl_return_ratio": 0.062,
+    "thesis_vs_hodl_sharpe_ratio": 0.255
+  },
+  "config": {
+    "max_positions": 3,
+    "commission_pct": 0.001,
+    "atr_period": 14,
+    "atr_stop_mult": 2.0,
+    "atr_target_mult": 4.0,
+    "thesis_voter_threshold": 0.2,
+    "min_warmup_bars": 20
+  },
+  "trades": [
+    {
+      "symbol": "BNB/USDT",
+      "direction": 1,
+      "entry_timestamp": "2021-06-21T00:00:00+00:00",
+      "entry_price": 290.87,
+      "exit_timestamp": "2021-06-28T00:00:00+00:00",
+      "exit_price": 307.62,
+      "exit_reason": "opposing_signal",
+      "notional": 3333.3333333333335,
+      "realized_pnl": 188.42759079084587
+    },
+    {
+      "symbol": "SOL/USDT",
+      "direction": 1,
+      "entry_timestamp": "2021-06-21T00:00:00+00:00",
+      "entry_price": 31.897,
+      "exit_timestamp": "2021-07-05T00:00:00+00:00",
+      "exit_price": 32.182,
+      "exit_reason": "opposing_signal",
+      "notional": 3332.222222222222,
+      "realized_pnl": 26.41144175871681
+    },
+    {
+      "symbol": "BNB/USDT",
+      "direction": 1,
+      "entry_timestamp": "2021-07-26T00:00:00+00:00",
+      "entry_price": 332.59,
+      "exit_timestamp": "2021-09-20T00:00:00+00:00",
+      "exit_price": 344.0,
+      "exit_reason": "opposing_signal",
+      "notional": 3402.7244923313356,
+      "realized_pnl": 113.21611964322034
+    },
+    {
+      "symbol": "BTC/USDT",
+      "direction": 1,
+      "entry_timestamp": "2021-07-26T00:00:00+00:00",
+      "entry_price": 39845.44,
+      "exit_timestamp": "2021-09-20T00:00:00+00:00",
+      "exit_price": 43160.9,
+      "exit_reason": "opposing_signal",
+      "notional": 3401.590250833892,
+      "realized_pnl": 279.3549454184096
+    },
+    {
+      "symbol": "ETH/USDT",
+      "direction": 1,
+      "entry_timestamp": "2021-07-26T00:00:00+00:00",
+      "entry_price": 2555.69,
+      "exit_timestamp": "2021-09-20T00:00:00+00:00",
+      "exit_price": 3059.37,
+      "exit_reason": "opposing_signal",
+      "notional": 3400.456387416947,
+      "realized_pnl": 666.0974605512388
+    },
+    {
+      "symbol": "SOL/USDT",
+      "direction": 1,
+      "entry_timestamp": "2021-09-20T00:00:00+00:00",
+      "entry_price": 135.64,
+      "exit_timestamp": "2021-10-11T00:00:00+00:00",
+      "exit_price": 160.12,
+      "exit_reason": "opposing_signal",
+      "notional": 3752.212410492098,
+      "realized_pnl": 672.761394556758
+    },
+    {
+      "symbol": "BTC/USDT",
+      "direction": 1,
+      "entry_timestamp": "2021-10-04T00:00:00+00:00",
+      "entry_price": 54659.0,
+      "exit_timestamp": "2021-11-29T00:00:00+00:00",
+      "exit_price": 49396.33,
+      "exit_reason": "opposing_signal",
+      "notional": 3750.9616730219336,
+      "realized_pnl": -364.5393660399984
+    },
+    {
+      "symbol": "BNB/USDT",
+      "direction": 1,
+      "entry_timestamp": "2021-10-11T00:00:00+00:00",
+      "entry_price": 470.9,
+      "exit_timestamp": "2021-12-06T00:00:00+00:00",
+      "exit_price": 570.3,
+      "exit_reason": "opposing_signal",
+      "notional": 3749.7113524642596,
+      "realized_pnl": 786.9671863466489
+    },
+    {
+      "symbol": "ETH/USDT",
+      "direction": 1,
+      "entry_timestamp": "2021-10-18T00:00:00+00:00",
+      "entry_price": 4082.33,
+      "exit_timestamp": "2021-12-06T00:00:00+00:00",
+      "exit_price": 4130.0,
+      "exit_reason": "opposing_signal",
+      "notional": 3972.715246865691,
+      "realized_pnl": 42.37090628355191
+    },
+    {
+      "symbol": "XRP/USDT",
+      "direction": 1,
+      "entry_timestamp": "2022-02-07T00:00:00+00:00",
+      "entry_price": 0.8057,
+      "exit_timestamp": "2022-04-18T00:00:00+00:00",
+      "exit_price": 0.6981,
+      "exit_reason": "opposing_signal",
+      "notional": 4126.323917313469,
+      "realized_pnl": -554.6394938930191
+    },
+    {
+      "symbol": "BNB/USDT",
+      "direction": 1,
+      "entry_timestamp": "2022-03-21T00:00:00+00:00",
+      "entry_price": 430.5,
+      "exit_timestamp": "2022-04-25T00:00:00+00:00",
+      "exit_price": 389.9,
+      "exit_reason": "opposing_signal",
+      "notional": 4124.948476007698,
+      "realized_pnl": -392.75546001558195
+    },
+    {
+      "symbol": "BTC/USDT",
+      "direction": 1,
+      "entry_timestamp": "2022-03-21T00:00:00+00:00",
+      "entry_price": 46827.76,
+      "exit_timestamp": "2022-04-25T00:00:00+00:00",
+      "exit_price": 38468.35,
+      "exit_reason": "opposing_signal",
+      "notional": 4123.573493182362,
+      "realized_pnl": -739.5029905985261
+    },
+    {
+      "symbol": "BTC/USDT",
+      "direction": 1,
+      "entry_timestamp": "2022-07-18T00:00:00+00:00",
+      "entry_price": 22579.68,
+      "exit_timestamp": "2022-08-22T00:00:00+00:00",
+      "exit_price": 19555.61,
+      "exit_reason": "opposing_signal",
+      "notional": 3557.5267829574327,
+      "realized_pnl": -479.5364515737226
+    },
+    {
+      "symbol": "SOL/USDT",
+      "direction": 1,
+      "entry_timestamp": "2022-07-11T00:00:00+00:00",
+      "entry_price": 38.62,
+      "exit_timestamp": "2022-08-22T00:00:00+00:00",
+      "exit_price": 30.44,
+      "exit_reason": "opposing_signal",
+      "notional": 3559.899653848926,
+      "realized_pnl": -756.8188118577775
+    },
+    {
+      "symbol": "BNB/USDT",
+      "direction": 1,
+      "entry_timestamp": "2022-07-18T00:00:00+00:00",
+      "entry_price": 261.4,
+      "exit_timestamp": "2022-09-05T00:00:00+00:00",
+      "exit_price": 295.3,
+      "exit_reason": "opposing_signal",
+      "notional": 3558.713020630976,
+      "realized_pnl": 457.49611111093304
+    },
+    {
+      "symbol": "SOL/USDT",
+      "direction": 1,
+      "entry_timestamp": "2022-09-26T00:00:00+00:00",
+      "entry_price": 32.06,
+      "exit_timestamp": "2022-10-10T00:00:00+00:00",
+      "exit_price": 30.17,
+      "exit_reason": "opposing_signal",
+      "notional": 3294.5237754097784,
+      "realized_pnl": -197.31895564031802
+    },
+    {
+      "symbol": "XRP/USDT",
+      "direction": 1,
+      "entry_timestamp": "2022-09-19T00:00:00+00:00",
+      "entry_price": 0.4917,
+      "exit_timestamp": "2022-10-24T00:00:00+00:00",
+      "exit_price": 0.4582,
+      "exit_reason": "opposing_signal",
+      "notional": 3296.721223256258,
+      "realized_pnl": -227.6809409062045
+    },
+    {
+      "symbol": "BTC/USDT",
+      "direction": 1,
+      "entry_timestamp": "2022-09-26T00:00:00+00:00",
+      "entry_price": 19056.8,
+      "exit_timestamp": "2022-11-14T00:00:00+00:00",
+      "exit_price": 16280.23,
+      "exit_reason": "opposing_signal",
+      "notional": 3295.6223161818393,
+      "realized_pnl": -482.98662649246364
+    },
+    {
+      "symbol": "ETH/USDT",
+      "direction": 1,
+      "entry_timestamp": "2022-10-31T00:00:00+00:00",
+      "entry_price": 1568.29,
+      "exit_timestamp": "2022-11-14T00:00:00+00:00",
+      "exit_price": 1142.21,
+      "exit_reason": "opposing_signal",
+      "notional": 3150.6830844306,
+      "realized_pnl": -858.2862801778099
+    },
+    {
+      "symbol": "BNB/USDT",
+      "direction": 1,
+      "entry_timestamp": "2022-10-24T00:00:00+00:00",
+      "entry_price": 313.5,
+      "exit_timestamp": "2022-12-05T00:00:00+00:00",
+      "exit_price": 284.4,
+      "exit_reason": "opposing_signal",
+      "notional": 3227.652615604536,
+      "realized_pnl": -302.5283429600319
+    },
+    {
+      "symbol": "BTC/USDT",
+      "direction": 1,
+      "entry_timestamp": "2023-01-09T00:00:00+00:00",
+      "entry_price": 20871.5,
+      "exit_timestamp": "2023-02-27T00:00:00+00:00",
+      "exit_price": 22430.24,
+      "exit_reason": "opposing_signal",
+      "notional": 2600.8318738234016,
+      "realized_pnl": 191.44208091771
+    },
+    {
+      "symbol": "ETH/USDT",
+      "direction": 1,
+      "entry_timestamp": "2023-01-09T00:00:00+00:00",
+      "entry_price": 1552.52,
+      "exit_timestamp": "2023-02-27T00:00:00+00:00",
+      "exit_price": 1564.58,
+      "exit_reason": "opposing_signal",
+      "notional": 2599.9649298654604,
+      "realized_pnl": 17.57640734045836
+    },
+    {
+      "symbol": "SOL/USDT",
+      "direction": 1,
+      "entry_timestamp": "2023-01-02T00:00:00+00:00",
+      "entry_price": 14.45,
+      "exit_timestamp": "2023-02-27T00:00:00+00:00",
+      "exit_price": 20.97,
+      "exit_reason": "opposing_signal",
+      "notional": 2601.699106859021,
+      "realized_pnl": 1170.1398302041512
+    },
+    {
+      "symbol": "BNB/USDT",
+      "direction": 1,
+      "entry_timestamp": "2023-03-13T00:00:00+00:00",
+      "entry_price": 336.7,
+      "exit_timestamp": "2023-05-15T00:00:00+00:00",
+      "exit_price": 306.4,
+      "exit_reason": "opposing_signal",
+      "notional": 3058.817714376278,
+      "realized_pnl": -278.0498915749514
+    },
+    {
+      "symbol": "BTC/USDT",
+      "direction": 1,
+      "entry_timestamp": "2023-03-13T00:00:00+00:00",
+      "entry_price": 27972.87,
+      "exit_timestamp": "2023-05-15T00:00:00+00:00",
+      "exit_price": 26747.78,
+      "exit_reason": "opposing_signal",
+      "notional": 3057.798108471486,
+      "realized_pnl": -136.8421329594405
+    },
+    {
+      "symbol": "ETH/USDT",
+      "direction": 1,
+      "entry_timestamp": "2023-03-13T00:00:00+00:00",
+      "entry_price": 1780.68,
+      "exit_timestamp": "2023-05-15T00:00:00+00:00",
+      "exit_price": 1804.91,
+      "exit_reason": "opposing_signal",
+      "notional": 3056.778842435329,
+      "realized_pnl": 38.495709870222676
+    },
+    {
+      "symbol": "XRP/USDT",
+      "direction": 1,
+      "entry_timestamp": "2023-05-29T00:00:00+00:00",
+      "entry_price": 0.5359,
+      "exit_timestamp": "2023-07-03T00:00:00+00:00",
+      "exit_price": 0.468,
+      "exit_reason": "opposing_signal",
+      "notional": 2930.294477933127,
+      "realized_pnl": -373.8353664253257
+    },
+    {
+      "symbol": "BTC/USDT",
+      "direction": 1,
+      "entry_timestamp": "2023-06-19T00:00:00+00:00",
+      "entry_price": 30462.66,
+      "exit_timestamp": "2023-07-31T00:00:00+00:00",
+      "exit_price": 29088.42,
+      "exit_reason": "opposing_signal",
+      "notional": 2929.3177131071493,
+      "realized_pnl": -134.945365835179
+    },
+    {
+      "symbol": "ETH/USDT",
+      "direction": 1,
+      "entry_timestamp": "2023-07-10T00:00:00+00:00",
+      "entry_price": 1922.11,
+      "exit_timestamp": "2023-07-31T00:00:00+00:00",
+      "exit_price": 1830.28,
+      "exit_reason": "opposing_signal",
+      "notional": 2803.7294850610047,
+      "realized_pnl": -136.61969846422386
+    },
+    {
+      "symbol": "SOL/USDT",
+      "direction": 1,
+      "entry_timestamp": "2023-07-10T00:00:00+00:00",
+      "entry_price": 27.42,
+      "exit_timestamp": "2023-08-14T00:00:00+00:00",
+      "exit_price": 21.77,
+      "exit_reason": "opposing_signal",
+      "notional": 2802.7949085659843,
+      "realized_pnl": -579.7523004579613
+    },
+    {
+      "symbol": "SOL/USDT",
+      "direction": 1,
+      "entry_timestamp": "2023-09-25T00:00:00+00:00",
+      "entry_price": 23.87,
+      "exit_timestamp": "2023-10-30T00:00:00+00:00",
+      "exit_price": 40.17857142857143,
+      "exit_reason": "target",
+      "notional": 2518.088188677341,
+      "realized_pnl": 1716.1813113671658
+    },
+    {
+      "symbol": "BTC/USDT",
+      "direction": 1,
+      "entry_timestamp": "2023-10-16T00:00:00+00:00",
+      "entry_price": 29992.46,
+      "exit_timestamp": "2023-11-06T00:00:00+00:00",
+      "exit_price": 37603.38285714285,
+      "exit_reason": "target",
+      "notional": 2517.248825947782,
+      "realized_pnl": 635.624072022541
+    },
+    {
+      "symbol": "BNB/USDT",
+      "direction": 1,
+      "entry_timestamp": "2023-10-23T00:00:00+00:00",
+      "entry_price": 227.1,
+      "exit_timestamp": "2023-12-25T00:00:00+00:00",
+      "exit_price": 286.3,
+      "exit_reason": "target",
+      "notional": 2516.409743005799,
+      "realized_pnl": 652.800566607313
+    },
+    {
+      "symbol": "XRP/USDT",
+      "direction": 1,
+      "entry_timestamp": "2023-10-30T00:00:00+00:00",
+      "entry_price": 0.6607,
+      "exit_timestamp": "2024-01-01T00:00:00+00:00",
+      "exit_price": 0.5195428571428571,
+      "exit_reason": "stop",
+      "notional": 3087.631376880519,
+      "realized_pnl": -662.0938098741768
+    },
+    {
+      "symbol": "ETH/USDT",
+      "direction": 1,
+      "entry_timestamp": "2023-11-06T00:00:00+00:00",
+      "entry_price": 2044.68,
+      "exit_timestamp": "2024-01-08T00:00:00+00:00",
+      "exit_price": 2655.7028571428573,
+      "exit_reason": "target",
+      "notional": 3298.476857095739,
+      "realized_pnl": 981.4176198860564
+    },
+    {
+      "symbol": "BNB/USDT",
+      "direction": 1,
+      "entry_timestamp": "2024-01-01T00:00:00+00:00",
+      "entry_price": 302.4,
+      "exit_timestamp": "2024-02-26T00:00:00+00:00",
+      "exit_price": 413.74285714285713,
+      "exit_reason": "target",
+      "notional": 3514.9775536791453,
+      "realized_pnl": 1289.3959879755105
+    },
+    {
+      "symbol": "XRP/USDT",
+      "direction": 1,
+      "entry_timestamp": "2024-02-26T00:00:00+00:00",
+      "entry_price": 0.6271,
+      "exit_timestamp": "2024-04-08T00:00:00+00:00",
+      "exit_price": 0.4823857142857143,
+      "exit_reason": "stop",
+      "notional": 4050.045827157049,
+      "realized_pnl": -937.734289963927
+    },
+    {
+      "symbol": "XRP/USDT",
+      "direction": 1,
+      "entry_timestamp": "2024-07-15T00:00:00+00:00",
+      "entry_price": 0.5984,
+      "exit_timestamp": "2024-08-05T00:00:00+00:00",
+      "exit_price": 0.4571857142857143,
+      "exit_reason": "stop",
+      "notional": 3736.117715226688,
+      "realized_pnl": -884.5275637475222
+    },
+    {
+      "symbol": "BTC/USDT",
+      "direction": 1,
+      "entry_timestamp": "2024-08-05T00:00:00+00:00",
+      "entry_price": 58712.59,
+      "exit_timestamp": "2024-08-19T00:00:00+00:00",
+      "exit_price": 64220.0,
+      "exit_reason": "opposing_signal",
+      "notional": 3734.8723426549454,
+      "realized_pnl": 346.25656587140827
+    },
+    {
+      "symbol": "SOL/USDT",
+      "direction": 1,
+      "entry_timestamp": "2024-08-05T00:00:00+00:00",
+      "entry_price": 141.57,
+      "exit_timestamp": "2024-08-19T00:00:00+00:00",
+      "exit_price": 158.92,
+      "exit_reason": "opposing_signal",
+      "notional": 3733.6273852073937,
+      "realized_pnl": 453.38056840637915
+    },
+    {
+      "symbol": "XRP/USDT",
+      "direction": 1,
+      "entry_timestamp": "2024-08-12T00:00:00+00:00",
+      "entry_price": 0.5631,
+      "exit_timestamp": "2024-08-26T00:00:00+00:00",
+      "exit_price": 0.5472,
+      "exit_reason": "opposing_signal",
+      "notional": 3437.540321496484,
+      "realized_pnl": -100.40474724865398
+    },
+    {
+      "symbol": "BNB/USDT",
+      "direction": 1,
+      "entry_timestamp": "2024-09-09T00:00:00+00:00",
+      "entry_price": 553.4,
+      "exit_timestamp": "2024-10-28T00:00:00+00:00",
+      "exit_price": 557.7,
+      "exit_reason": "opposing_signal",
+      "notional": 3669.4719370656962,
+      "realized_pnl": 24.8143563969664
+    },
+    {
+      "symbol": "ETH/USDT",
+      "direction": 1,
+      "entry_timestamp": "2024-10-07T00:00:00+00:00",
+      "entry_price": 2468.91,
+      "exit_timestamp": "2024-10-28T00:00:00+00:00",
+      "exit_price": 2457.73,
+      "exit_reason": "opposing_signal",
+      "notional": 3667.0260301600897,
+      "realized_pnl": -20.25586631440375
+    },
+    {
+      "symbol": "XRP/USDT",
+      "direction": 1,
+      "entry_timestamp": "2024-11-04T00:00:00+00:00",
+      "entry_price": 0.5884,
+      "exit_timestamp": "2024-11-11T00:00:00+00:00",
+      "exit_price": 0.9063142857142857,
+      "exit_reason": "target",
+      "notional": 3666.100743782609,
+      "realized_pnl": 1975.1583273951421
+    },
+    {
+      "symbol": "SOL/USDT",
+      "direction": 1,
+      "entry_timestamp": "2024-09-30T00:00:00+00:00",
+      "entry_price": 146.48,
+      "exit_timestamp": "2024-11-18T00:00:00+00:00",
+      "exit_price": 263.3542857142857,
+      "exit_reason": "target",
+      "notional": 3668.248779753341,
+      "realized_pnl": 2920.247862634883
+    },
+    {
+      "symbol": "ETH/USDT",
+      "direction": 1,
+      "entry_timestamp": "2024-11-04T00:00:00+00:00",
+      "entry_price": 3183.21,
+      "exit_timestamp": "2025-01-06T00:00:00+00:00",
+      "exit_price": 3267.3,
+      "exit_reason": "opposing_signal",
+      "notional": 3667.3231848442233,
+      "realized_pnl": 93.11448555756915
+    },
+    {
+      "symbol": "SOL/USDT",
+      "direction": 1,
+      "entry_timestamp": "2025-01-20T00:00:00+00:00",
+      "entry_price": 240.5,
+      "exit_timestamp": "2025-02-03T00:00:00+00:00",
+      "exit_price": 200.47,
+      "exit_reason": "opposing_signal",
+      "notional": 5327.718935397213,
+      "realized_pnl": -891.2126270225759
+    },
+    {
+      "symbol": "SOL/USDT",
+      "direction": 1,
+      "entry_timestamp": "2025-04-14T00:00:00+00:00",
+      "entry_price": 137.86,
+      "exit_timestamp": "2025-06-09T00:00:00+00:00",
+      "exit_price": 152.97,
+      "exit_reason": "opposing_signal",
+      "notional": 5028.872153411221,
+      "realized_pnl": 545.6041757198329
+    },
+    {
+      "symbol": "XRP/USDT",
+      "direction": 1,
+      "entry_timestamp": "2025-05-05T00:00:00+00:00",
+      "entry_price": 2.367,
+      "exit_timestamp": "2025-06-09T00:00:00+00:00",
+      "exit_price": 2.1655,
+      "exit_reason": "opposing_signal",
+      "notional": 5025.520130739186,
+      "realized_pnl": -432.41447832152966
+    },
+    {
+      "symbol": "ETH/USDT",
+      "direction": 1,
+      "entry_timestamp": "2025-05-05T00:00:00+00:00",
+      "entry_price": 2514.57,
+      "exit_timestamp": "2025-06-16T00:00:00+00:00",
+      "exit_price": 2227.7,
+      "exit_reason": "opposing_signal",
+      "notional": 5027.195862693417,
+      "realized_pnl": -577.9718843993941
+    },
+    {
+      "symbol": "ETH/USDT",
+      "direction": 1,
+      "entry_timestamp": "2025-07-07T00:00:00+00:00",
+      "entry_price": 2972.03,
+      "exit_timestamp": "2025-08-11T00:00:00+00:00",
+      "exit_price": 4495.601428571429,
+      "exit_reason": "target",
+      "notional": 4868.917561695243,
+      "realized_pnl": 2488.6205631580387
+    },
+    {
+      "symbol": "BNB/USDT",
+      "direction": 1,
+      "entry_timestamp": "2025-07-28T00:00:00+00:00",
+      "entry_price": 751.21,
+      "exit_timestamp": "2025-09-15T00:00:00+00:00",
+      "exit_price": 997.25,
+      "exit_reason": "target",
+      "notional": 4865.672157644954,
+      "realized_pnl": 1587.1696144989453
+    },
+    {
+      "symbol": "SOL/USDT",
+      "direction": 1,
+      "entry_timestamp": "2025-07-14T00:00:00+00:00",
+      "entry_price": 181.43,
+      "exit_timestamp": "2025-10-20T00:00:00+00:00",
+      "exit_price": 200.03,
+      "exit_reason": "opposing_signal",
+      "notional": 4867.294589174679,
+      "realized_pnl": 493.6232950558143
+    },
+    {
+      "symbol": "BNB/USDT",
+      "direction": 1,
+      "entry_timestamp": "2025-10-27T00:00:00+00:00",
+      "entry_price": 1083.25,
+      "exit_timestamp": "2025-11-10T00:00:00+00:00",
+      "exit_price": 926.56,
+      "exit_reason": "opposing_signal",
+      "notional": 6387.188091163338,
+      "realized_pnl": -929.3575952015989
+    }
+  ]
+}

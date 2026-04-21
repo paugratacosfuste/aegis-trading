@@ -151,6 +151,24 @@ class AgentSignal:
 
 
 @dataclass(frozen=True)
+class ThesisSignal:
+    """Aegis 2.0 thesis-layer output.
+
+    Produced by the ThesisVoter after aggregating direction-voting agents.
+    Fed into the RL executor (Phase 3) which decides sizing, timing, and
+    stop distance. Fields deliberately minimal: direction + conviction +
+    provenance. No sizing, no stop, no entry/exit price — those are the
+    executor's job.
+    """
+    symbol: str
+    timestamp: datetime
+    direction: str  # "long" | "short" | "flat"
+    conviction: float  # [0.0, 1.0]
+    contributing_agents: tuple[str, ...]  # agent_ids that voted non-neutral
+    metadata: dict
+
+
+@dataclass(frozen=True)
 class TradeDecision:
     action: str  # "LONG" | "SHORT" | "NO_TRADE"
     symbol: str
