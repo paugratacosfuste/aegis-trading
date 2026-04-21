@@ -53,6 +53,7 @@ class BacktestEngine:
         agents: list[BaseAgent] | None = None,
         shadow_hook=None,
         macro_provider=None,
+        geo_provider=None,
     ):
         self.initial_capital = initial_capital
         self.equity = initial_capital
@@ -68,6 +69,7 @@ class BacktestEngine:
         self._regime_detector = PriceRegimeDetector()
         self._shadow_hook = shadow_hook
         self._macro_provider = macro_provider
+        self._geo_provider = geo_provider
 
         self._positions: list[dict] = []
         self._closed_trades: list[dict] = []
@@ -146,9 +148,11 @@ class BacktestEngine:
             current_price = window[-1].close
             symbol = window[-1].symbol
 
-            # Advance macro provider to current bar timestamp
+            # Advance macro + geo providers to current bar timestamp
             if self._macro_provider and hasattr(self._macro_provider, "advance_to"):
                 self._macro_provider.advance_to(window[-1].timestamp)
+            if self._geo_provider and hasattr(self._geo_provider, "advance_to"):
+                self._geo_provider.advance_to(window[-1].timestamp)
 
             # Check exits on open positions (trailing stop, take-profit, stop-loss, time)
             atr = self._compute_atr(window[-14:]) if len(window) >= 14 else self._compute_atr(window)
@@ -347,9 +351,11 @@ class BacktestEngine:
         _AGENT_WINDOW_CAP = 200  # Agents only need last ~120 candles max
 
         for i in range(MIN_LOOKBACK, min_len):
-            # Advance macro provider to current bar timestamp
+            # Advance macro + geo providers to current bar timestamp
             if self._macro_provider and hasattr(self._macro_provider, "advance_to"):
                 self._macro_provider.advance_to(primary_candles[i].timestamp)
+            if self._geo_provider and hasattr(self._geo_provider, "advance_to"):
+                self._geo_provider.advance_to(primary_candles[i].timestamp)
 
             # Detect regime periodically from primary symbol
             if (i - MIN_LOOKBACK) % max(_REGIME_UPDATE_INTERVAL, 1) == 0:

@@ -69,6 +69,7 @@ def create_agents_from_config(
     agents_config: dict[str, list[dict[str, Any]]],
     enabled_types: list[str] | None = None,
     macro_provider: Any | None = None,
+    geo_provider: Any | None = None,
 ) -> list[BaseAgent]:
     """Create all agents defined in the YAML agents section.
 
@@ -78,7 +79,8 @@ def create_agents_from_config(
 
     If enabled_types is provided, only agent types in the list are created.
     Fundamental agents automatically receive YahooFundamentalProvider.
-    Macro agents receive the provided macro_provider (or NullMacroProvider).
+    Macro agents receive ``macro_provider`` (or NullMacroProvider if None).
+    Geopolitical agents receive ``geo_provider`` (or NullGeopoliticalProvider).
     """
     _ensure_registered()
 
@@ -104,6 +106,8 @@ def create_agents_from_config(
                 agents.append(cls(agent_id, params, provider=fund_provider))
             elif agent_type == "macro":
                 agents.append(cls(agent_id, params, provider=macro_provider))
+            elif agent_type == "geopolitical":
+                agents.append(cls(agent_id, params, provider=geo_provider))
             else:
                 agents.append(cls(agent_id, params))
     return agents

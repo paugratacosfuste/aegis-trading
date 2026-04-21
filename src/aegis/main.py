@@ -69,24 +69,45 @@ def run_backtest(config_path: str) -> None:
         logger.info("Downloaded %d candles for %s", len(candles), sym)
         candles_by_symbol[sym] = candles
 
-    # Download macro data if macro agents are enabled
+    # Download macro data if macro agents are enabled.
+    # FRED is primary (richer, more reliable); yfinance is the fallback for
+    # offline/network-gated environments.
     enabled_types = config.ensemble.get("enabled_types")
     macro_provider = None
     if enabled_types is None or "macro" in enabled_types:
         from aegis.agents.macro.providers import BacktestMacroProvider
+        from aegis.data.fred_loader import download_fred_macro_data
         from aegis.data.macro_data_loader import download_macro_data
 
-        logger.info("Downloading macro data for %s to %s...", start, end)
-        macro_snapshots = download_macro_data(start=start, end=end)
+        logger.info("Downloading FRED macro data for %s to %s...", start, end)
+        macro_snapshots = download_fred_macro_data(start=start, end=end)
+        if not macro_snapshots:
+            logger.warning("FRED returned nothing — falling back to yfinance macro loader")
+            macro_snapshots = download_macro_data(start=start, end=end)
         if macro_snapshots:
             macro_provider = BacktestMacroProvider(macro_snapshots)
             logger.info("Macro provider loaded with %d snapshots", len(macro_snapshots))
+
+    # Download geopolitical events if geopolitical agents are enabled.
+    geo_provider = None
+    if enabled_types is None or "geopolitical" in enabled_types:
+        from aegis.agents.geopolitical.providers import BacktestGeopoliticalProvider
+        from aegis.data.gdelt_loader import download_gdelt_events
+
+        logger.info("Downloading GDELT events for %s to %s...", start, end)
+        events = download_gdelt_events(start=start, end=end)
+        if events:
+            geo_provider = BacktestGeopoliticalProvider(events)
+            logger.info("Geo provider loaded with %d events", len(events))
+        else:
+            logger.warning("GDELT returned no events — geopolitical agents will be neutral")
 
     # Use config-driven agents if defined, else Phase 1 defaults
     agents = (
         create_agents_from_config(
             config.agents, enabled_types=enabled_types,
             macro_provider=macro_provider,
+            geo_provider=geo_provider,
         )
         if config.agents
         else create_default_agents()
@@ -101,6 +122,7 @@ def run_backtest(config_path: str) -> None:
         max_risk_pct=config.max_risk_per_trade,
         agents=agents,
         macro_provider=macro_provider,
+        geo_provider=geo_provider,
     )
 
     if len(candles_by_symbol) == 1:
